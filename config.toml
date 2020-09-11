@@ -1,0 +1,22 @@
+[log]
+PATH   = ""
+PREFIX = "" # defaults to 'Chapper'
+
+[store]
+USER     = ""
+PASSWORD = ""
+DATABASE = ""
+HOST     = ""
+PORT     = 3306
+
+[router]
+PORT            = 8080
+DOMAIN          = ""
+WEB_PATH        = "/var/www/chapper"
+JWT_SIGNING_KEY = ""
+OTP_ISSUER      = "Chapper"
+ENABLE_GZIP     = false
+
+[general]
+NAME            = "Chapper"
+ENABLE_REGISTER = false
