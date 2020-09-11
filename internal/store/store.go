@@ -11,9 +11,9 @@ import (
 	"fmt"
 	"strings"
 
-	"git.web-warrior.de/go-chapper/server/internal/config"
-	"git.web-warrior.de/go-chapper/server/internal/constants"
-	"git.web-warrior.de/go-chapper/server/internal/models"
+	"chapper.dev/server/internal/config"
+	"chapper.dev/server/internal/constants"
+	"chapper.dev/server/internal/models"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"

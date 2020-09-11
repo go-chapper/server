@@ -4,7 +4,7 @@
 
 package main
 
-import "git.web-warrior.de/go-chapper/server/cmd"
+import "chapper.dev/server/cmd"
 
 func main() {
 	cmd.Execute()

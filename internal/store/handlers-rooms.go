@@ -6,7 +6,7 @@
 package store
 
 import (
-	"git.web-warrior.de/go-chapper/server/internal/models"
+	"chapper.dev/server/internal/models"
 )
 
 // CreateRoom creates a new 'room' on server identified by 'serverhash'

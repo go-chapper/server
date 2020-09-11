@@ -6,7 +6,7 @@
 package handlers
 
 import (
-	"git.web-warrior.de/go-chapper/server/internal/utils"
+	"chapper.dev/server/internal/utils"
 
 	"github.com/labstack/echo/v4"
 )

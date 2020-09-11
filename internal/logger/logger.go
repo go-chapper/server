@@ -5,8 +5,8 @@ import (
 	"os"
 	"strings"
 
-	"git.web-warrior.de/go-chapper/server/internal/config"
-	"git.web-warrior.de/go-chapper/server/internal/utils"
+	"chapper.dev/server/internal/config"
+	"chapper.dev/server/internal/utils"
 )
 
 // New sets up a new std logger which writes to file at 'path' with 'prefix'

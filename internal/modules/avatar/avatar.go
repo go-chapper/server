@@ -18,8 +18,8 @@ import (
 	"os"
 	"strconv"
 
-	"git.web-warrior.de/go-chapper/server/internal/modules/hash"
-	"git.web-warrior.de/go-chapper/server/internal/utils"
+	"chapper.dev/server/internal/modules/hash"
+	"chapper.dev/server/internal/utils"
 )
 
 // Avatar represents an avatar image

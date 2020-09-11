@@ -6,14 +6,14 @@
 package handlers
 
 import (
-	"git.web-warrior.de/go-chapper/server/internal/config"
-	"git.web-warrior.de/go-chapper/server/internal/modules/jwt"
-	"git.web-warrior.de/go-chapper/server/internal/services/auth"
-	"git.web-warrior.de/go-chapper/server/internal/services/invite"
-	"git.web-warrior.de/go-chapper/server/internal/services/room"
-	"git.web-warrior.de/go-chapper/server/internal/services/server"
-	"git.web-warrior.de/go-chapper/server/internal/services/user"
-	"git.web-warrior.de/go-chapper/server/internal/store"
+	"chapper.dev/server/internal/config"
+	"chapper.dev/server/internal/modules/jwt"
+	"chapper.dev/server/internal/services/auth"
+	"chapper.dev/server/internal/services/invite"
+	"chapper.dev/server/internal/services/room"
+	"chapper.dev/server/internal/services/server"
+	"chapper.dev/server/internal/services/user"
+	"chapper.dev/server/internal/store"
 
 	j "github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"

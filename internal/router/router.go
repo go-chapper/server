@@ -9,10 +9,10 @@ import (
 	"fmt"
 	"log"
 
-	"git.web-warrior.de/go-chapper/server/internal/config"
-	"git.web-warrior.de/go-chapper/server/internal/modules/jwt"
-	"git.web-warrior.de/go-chapper/server/internal/router/handlers"
-	"git.web-warrior.de/go-chapper/server/internal/utils"
+	"chapper.dev/server/internal/config"
+	"chapper.dev/server/internal/modules/jwt"
+	"chapper.dev/server/internal/router/handlers"
+	"chapper.dev/server/internal/utils"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"

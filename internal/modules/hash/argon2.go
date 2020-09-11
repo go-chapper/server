@@ -13,8 +13,8 @@ import (
 	"runtime"
 	"strings"
 
-	"git.web-warrior.de/go-chapper/server/internal/constants"
-	"git.web-warrior.de/go-chapper/server/internal/utils"
+	"chapper.dev/server/internal/constants"
+	"chapper.dev/server/internal/utils"
 
 	"golang.org/x/crypto/argon2"
 )

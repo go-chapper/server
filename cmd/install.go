@@ -9,8 +9,8 @@ import (
 	"fmt"
 	"os"
 
-	"git.web-warrior.de/go-chapper/server/internal/constants"
-	"git.web-warrior.de/go-chapper/server/internal/installer"
+	"chapper.dev/server/internal/constants"
+	"chapper.dev/server/internal/installer"
 
 	"github.com/spf13/cobra"
 )

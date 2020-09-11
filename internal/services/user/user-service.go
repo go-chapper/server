@@ -6,8 +6,8 @@
 package user
 
 import (
-	"git.web-warrior.de/go-chapper/server/internal/models"
-	"git.web-warrior.de/go-chapper/server/internal/store"
+	"chapper.dev/server/internal/models"
+	"chapper.dev/server/internal/store"
 )
 
 // Service is the top-level service struct

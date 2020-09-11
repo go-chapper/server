@@ -6,7 +6,7 @@
 package store
 
 import (
-	"git.web-warrior.de/go-chapper/server/internal/models"
+	"chapper.dev/server/internal/models"
 )
 
 func (s *Store) GetUser(username string) (*models.User, error) {

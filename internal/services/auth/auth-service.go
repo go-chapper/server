@@ -6,11 +6,11 @@
 package auth
 
 import (
-	"git.web-warrior.de/go-chapper/server/internal/models"
-	"git.web-warrior.de/go-chapper/server/internal/modules/hash"
-	"git.web-warrior.de/go-chapper/server/internal/modules/jwt"
-	"git.web-warrior.de/go-chapper/server/internal/modules/twofa"
-	"git.web-warrior.de/go-chapper/server/internal/utils"
+	"chapper.dev/server/internal/models"
+	"chapper.dev/server/internal/modules/hash"
+	"chapper.dev/server/internal/modules/jwt"
+	"chapper.dev/server/internal/modules/twofa"
+	"chapper.dev/server/internal/utils"
 )
 
 // Service wraps authentication dependencies

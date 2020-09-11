@@ -10,7 +10,7 @@ import (
 	"net/http"
 	"strings"
 
-	"git.web-warrior.de/go-chapper/server/internal/models"
+	"chapper.dev/server/internal/models"
 	"gorm.io/gorm"
 
 	"github.com/labstack/echo/v4"

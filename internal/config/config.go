@@ -11,7 +11,7 @@ import (
 	"io/ioutil"
 	"runtime"
 
-	"git.web-warrior.de/go-chapper/server/internal/utils"
+	"chapper.dev/server/internal/utils"
 
 	"github.com/BurntSushi/toml"
 )

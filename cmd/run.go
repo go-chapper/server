@@ -9,12 +9,12 @@ import (
 	"fmt"
 	"log"
 
-	"git.web-warrior.de/go-chapper/server/internal/config"
-	"git.web-warrior.de/go-chapper/server/internal/constants"
-	"git.web-warrior.de/go-chapper/server/internal/logger"
-	"git.web-warrior.de/go-chapper/server/internal/router"
-	"git.web-warrior.de/go-chapper/server/internal/router/handlers"
-	"git.web-warrior.de/go-chapper/server/internal/store"
+	"chapper.dev/server/internal/config"
+	"chapper.dev/server/internal/constants"
+	"chapper.dev/server/internal/logger"
+	"chapper.dev/server/internal/router"
+	"chapper.dev/server/internal/router/handlers"
+	"chapper.dev/server/internal/store"
 
 	"github.com/spf13/cobra"
 )

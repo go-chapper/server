@@ -1,4 +1,4 @@
-module git.web-warrior.de/go-chapper/server
+module chapper.dev/server
 
 go 1.14
 

@@ -9,8 +9,8 @@ import (
 	"strconv"
 	"time"
 
-	"git.web-warrior.de/go-chapper/server/internal/config"
-	"git.web-warrior.de/go-chapper/server/internal/store"
+	"chapper.dev/server/internal/config"
+	"chapper.dev/server/internal/store"
 )
 
 func (i *Installer) defaultConfiguration() error {

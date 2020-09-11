@@ -9,9 +9,9 @@ import (
 	"fmt"
 	"time"
 
-	"git.web-warrior.de/go-chapper/server/internal/config"
-	"git.web-warrior.de/go-chapper/server/internal/constants"
-	"git.web-warrior.de/go-chapper/server/internal/store"
+	"chapper.dev/server/internal/config"
+	"chapper.dev/server/internal/constants"
+	"chapper.dev/server/internal/store"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/briandowns/spinner"

@@ -10,10 +10,10 @@ import (
 	"net/url"
 	"time"
 
-	"git.web-warrior.de/go-chapper/server/internal/config"
-	"git.web-warrior.de/go-chapper/server/internal/models"
-	"git.web-warrior.de/go-chapper/server/internal/modules/hash"
-	"git.web-warrior.de/go-chapper/server/internal/store"
+	"chapper.dev/server/internal/config"
+	"chapper.dev/server/internal/models"
+	"chapper.dev/server/internal/modules/hash"
+	"chapper.dev/server/internal/store"
 )
 
 type Service struct {
