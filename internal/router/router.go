@@ -92,7 +92,7 @@ func (r *Router) AddRoutes(handle *handlers.Handler) {
 
 	// PUBLIC KEY
 	key := r.echo.Group("/key")
-	key.GET("/:username", handle.GetKey)
+	key.GET("/:username", handle.GetKey, jwtware)
 
 	//// API ////
 	api := r.echo.Group("/api", jwtware)
@@ -126,8 +126,8 @@ func (r *Router) AddRoutes(handle *handlers.Handler) {
 	direct := v1.Group("/direct")
 	direct.DELETE("/:direct-hash", handle.DeleteDirect)
 	direct.POST("/:direct-hash", handle.UpdateDirect)
-	direct.PUT("/:direct-hash", handle.CreateDirect)
 	direct.GET("/:direct-hash", handle.GetDirect)
+	direct.PUT("", handle.CreateDirect)
 
 	// AUTH
 	auth := r.echo.Group("/auth")

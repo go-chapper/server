@@ -22,15 +22,23 @@ func NewService(store *store.Store) Service {
 	}
 }
 
-func (s Service) CreateRoom(serverhash string, room *models.Room) error {
+func (s Service) CreateRoom(serverHash string, room *models.Room) error {
 	room.Hash = hash.Adler32(room.Name)
-	return s.store.CreateRoom(serverhash, room)
+	return s.store.CreateRoom(serverHash, room)
 }
 
-func (s Service) GetRoom(serverhash, hash string) (models.Room, error) {
-	return s.store.GetRoom(serverhash, hash)
+func (s Service) GetRoom(serverHash, roomHash string) (models.Room, error) {
+	return s.store.GetRoom(serverHash, roomHash)
 }
 
-func (s Service) GetRooms(serverhash string) ([]models.Room, error) {
-	return s.store.GetRooms(serverhash)
+func (s Service) GetRooms(serverHash string) ([]models.Room, error) {
+	return s.store.GetRooms(serverHash)
+}
+
+func (s Service) UpdateRoom(serverHash string) error {
+	return nil
+}
+
+func (s Service) DeleteRoom(serverHash, roomHash string) error {
+	return s.store.DeleteRoom(serverHash, roomHash)
 }

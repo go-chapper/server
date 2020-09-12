@@ -6,19 +6,23 @@
 package user
 
 import (
+	"chapper.dev/server/internal/config"
 	"chapper.dev/server/internal/models"
+	"chapper.dev/server/internal/modules/avatar"
 	"chapper.dev/server/internal/store"
 )
 
 // Service is the top-level service struct
 type Service struct {
-	store *store.Store
+	store  *store.Store
+	config config.Config
 }
 
 // NewService returns a new user service
-func NewService(store *store.Store) Service {
+func NewService(s *store.Store, c config.Config) Service {
 	return Service{
-		store: store,
+		store:  s,
+		config: c,
 	}
 }
 
@@ -28,13 +32,24 @@ func (s Service) GetUser(username string) (*models.User, error) {
 	return s.store.GetUser(username)
 }
 
+func (s Service) GetUserPublicKey(username string) (string, error) {
+	return s.store.GetUserPublicKey(username)
+}
+
 // CreateUser creates a new 'user' or returns an error if the new user could not be
 // created
-func (s Service) CreateUser(user *models.User) error {
+func (s Service) CreateUser(newUser *models.SignupUser) error {
 	// TODO <2020/10/09>: Can we optimize/improve this?
 	settings, err := s.store.GetSettings()
 	if err != nil {
 		return err
+	}
+
+	user := &models.User{
+		Username:  newUser.Username,
+		Password:  newUser.Password,
+		Email:     newUser.Email,
+		PublicKey: newUser.PublicKey,
 	}
 
 	if !settings.SuperadminExists {
@@ -47,7 +62,13 @@ func (s Service) CreateUser(user *models.User) error {
 		}
 	}
 
-	return s.store.CreateUser(user)
+	err = s.store.CreateUser(user)
+	if err != nil {
+		return err
+	}
+
+	a := avatar.New(240, user.Username)
+	return a.Generate(s.config.Router.AvatarPath)
 }
 
 func (s Service) SaveTempToken(username, token string) error {

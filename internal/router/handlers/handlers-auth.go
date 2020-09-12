@@ -18,21 +18,19 @@ import (
 
 // AuthRegister registers a new user
 func (h *Handler) AuthRegister(c echo.Context) error {
-	newUser := new(models.User)
+	newUser := new(models.SignupUser)
 	err := c.Bind(newUser)
 	if err != nil {
 		log.Printf("WARNING [Router] Unable to bind to model: %v\n", err)
 		return c.JSON(http.StatusBadRequest, Map{
-			"error": "Invalid request",
-			"code":  ErrBind,
+			"error": ErrBind,
 		})
 	}
 
 	if newUser.IsEmpty() {
 		log.Println("WARNING [Router] Missing/empty data for registration")
 		return c.JSON(http.StatusBadRequest, Map{
-			"error": "Invalid request",
-			"code":  ErrEmptyData,
+			"error": ErrEmptyData,
 		})
 	}
 
@@ -40,8 +38,7 @@ func (h *Handler) AuthRegister(c echo.Context) error {
 	if err != nil {
 		log.Printf("ERROR [Router] Failed to hash password: %v\n", err)
 		return c.JSON(http.StatusInternalServerError, Map{
-			"error": "Internal server error",
-			"code":  ErrHashPassword,
+			"error": ErrHashPassword,
 		})
 	}
 
@@ -51,20 +48,17 @@ func (h *Handler) AuthRegister(c echo.Context) error {
 		// TODO <2020/06/09>: Can we do this more cleanly?
 		if strings.HasPrefix(err.Error(), "Error 1062") {
 			return c.JSON(http.StatusBadRequest, Map{
-				"error": "Invalid request",
-				"code":  ErrUsernameTaken,
+				"error": ErrUsernameTaken,
 			})
 		}
 
 		return c.JSON(http.StatusInternalServerError, Map{
-			"error": "Internal server error",
-			"code":  ErrCreateUser,
+			"error": ErrCreateUser,
 		})
 	}
 
 	return c.JSON(http.StatusOK, Map{
-		"status": "Success",
-		"code":   StatusRegistered,
+		"status": StatusRegistered,
 	})
 }
 
@@ -75,16 +69,14 @@ func (h *Handler) AuthRefresh(c echo.Context) error {
 	if err != nil {
 		log.Printf("WARNING [Router] Unable to bind to model: %v\n", err)
 		return c.JSON(http.StatusBadRequest, Map{
-			"error": "Invalid request",
-			"code":  ErrBind,
+			"error": ErrBind,
 		})
 	}
 
 	if refresh.IsEmpty() {
 		log.Println("WARNING [Router] Missing/empty data to refresh token")
 		return c.JSON(http.StatusBadRequest, Map{
-			"error": "Invalid request",
-			"code":  ErrEmptyData,
+			"error": ErrEmptyData,
 		})
 	}
 
@@ -106,8 +98,7 @@ func (h *Handler) AuthLogin(c echo.Context) error {
 	if user.IsLoginEmpty() {
 		log.Println("WARNING [Router] Missing/empty data for login")
 		return c.JSON(http.StatusBadRequest, Map{
-			"error": "Invalid request",
-			"code":  ErrEmptyData,
+			"error": ErrEmptyData,
 		})
 	}
 
@@ -115,8 +106,7 @@ func (h *Handler) AuthLogin(c echo.Context) error {
 	if err != nil {
 		log.Printf("WARNING [Router] This username %s does not exist\n", user.Username)
 		return c.JSON(http.StatusBadRequest, Map{
-			"error": "Invalid request",
-			"code":  ErrGetUser,
+			"error": ErrGetUser,
 		})
 	}
 
@@ -125,8 +115,7 @@ func (h *Handler) AuthLogin(c echo.Context) error {
 		if err != nil {
 			log.Printf("ERROR [Router] Failed to generate temp token for 2FA: %v\n", err)
 			return c.JSON(http.StatusInternalServerError, Map{
-				"error": "Internal server error",
-				"code":  ErrTwoFA,
+				"error": ErrTwoFA,
 			})
 		}
 
@@ -134,8 +123,7 @@ func (h *Handler) AuthLogin(c echo.Context) error {
 		if err != nil {
 			log.Printf("ERROR [Router] Failed to save temp token for 2FA: %v\n", err)
 			return c.JSON(http.StatusInternalServerError, Map{
-				"error": "Internal server error",
-				"code":  ErrTwoFA,
+				"error": ErrTwoFA,
 			})
 		}
 
@@ -149,8 +137,7 @@ func (h *Handler) AuthLogin(c echo.Context) error {
 	if !valid || err != nil {
 		log.Printf("WARNING [Router] Unauthorized: %v\n", err)
 		return c.JSON(http.StatusUnauthorized, Map{
-			"error": "Invalid request",
-			"code":  ErrUnauthorized,
+			"error": ErrUnauthorized,
 		})
 	}
 
@@ -163,8 +150,7 @@ func (h *Handler) AuthLogin(c echo.Context) error {
 	if err != nil {
 		log.Printf("ERROR [Router] Failed to sign JWT: %v\n", err)
 		return c.JSON(http.StatusInternalServerError, Map{
-			"error": "Internal server error",
-			"code":  ErrJWT,
+			"error": ErrJWT,
 		})
 	}
 

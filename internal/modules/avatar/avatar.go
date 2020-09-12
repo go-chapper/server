@@ -26,7 +26,9 @@ import (
 type Avatar struct {
 	Width       int
 	Height      int
+	Size        string
 	Data        string
+	RawData     string
 	Image       *image.RGBA
 	ImageBuffer *bytes.Buffer
 }
@@ -41,15 +43,33 @@ func New(size int, data string) *Avatar {
 	return &Avatar{
 		Width:       size,
 		Height:      size,
+		Size:        strconv.Itoa(size),
 		Data:        hash.MD5(data),
+		RawData:     data,
 		Image:       image.NewRGBA(image.Rect(0, 0, size, size)),
 		ImageBuffer: new(bytes.Buffer),
 	}
 }
 
-// Generate generates a new 6 x 6 quadrant avatar based on the data (hashed by MD5) and
-// specified color palette
-func (a *Avatar) Generate(paletteName string) error {
+// Generate will generate an avatar, encode and save it
+func (a *Avatar) Generate(basePath string) error {
+	pallete := GetRandomPalette()
+	err := a.GenerateImage(pallete)
+	if err != nil {
+		return err
+	}
+
+	err = a.Encode()
+	if err != nil {
+		return err
+	}
+
+	return a.Save(basePath, a.Size, a.RawData)
+}
+
+// GenerateImage generates a new 6 x 6 quadrant avatar based on the data (hashed by MD5)
+// and specified color palette
+func (a *Avatar) GenerateImage(paletteName string) error {
 	currentYQuadrant := 0
 	quadrant := a.Width / 6
 	colorMap := make(map[int]color.RGBA)
@@ -84,15 +104,15 @@ func (a *Avatar) Generate(paletteName string) error {
 }
 
 // Encode encodes the generated image as a JPEG image and writes it to ImageBuffer
-func (a *Avatar) Encode() (*bytes.Buffer, error) {
+func (a *Avatar) Encode() error {
 	err := jpeg.Encode(a.ImageBuffer, a.Image, &jpeg.Options{
 		Quality: 80,
 	})
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return a.ImageBuffer, nil
+	return nil
 }
 
 // Save saves the encoded image in ImageBuffer to disk at path base + size + name.jpg

@@ -16,9 +16,17 @@ type User struct {
 	Email          string `json:"email"`
 	EmailVerified  bool   `json:"email_verified"`
 	Avatar         string `json:"avatar"`
+	PublicKey      string `json:"-"`
 	TwoFASecret    string `json:"-"`
 	TwoFATempToken string `json:"-"`
 	Role           []Role `gorm:"many2many:user_roles;"`
+}
+
+type SignupUser struct {
+	Username  string `json:"username"`
+	Password  string `json:"password"`
+	Email     string `json:"email"`
+	PublicKey string `json:"public_key"`
 }
 
 // Role specifies a role which is used for rights management
@@ -83,8 +91,8 @@ func Superadmin() Role {
 }
 
 // IsEmpty returns if some or all values are empty
-func (u *User) IsEmpty() bool {
-	return u.Username == "" || u.Password == "" || u.Email == ""
+func (u *SignupUser) IsEmpty() bool {
+	return u.Username == "" || u.Password == "" || u.Email == "" || u.PublicKey == ""
 }
 
 // IsLoginEmpty returns if all required data is set to login a user (username and

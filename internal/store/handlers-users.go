@@ -14,6 +14,11 @@ func (s *Store) GetUser(username string) (*models.User, error) {
 	return user, s.Ctx().Preload("Role.Privileges").Where("username = ?", username).First(user).Error
 }
 
+func (s *Store) GetUserPublicKey(username string) (string, error) {
+	user := new(models.User)
+	return user.PublicKey, s.Ctx().Where("username = ?", username).Select("public_key").First(user).Error
+}
+
 func (s *Store) CreateUser(user *models.User) error {
 	return s.Ctx().Create(user).Error
 }

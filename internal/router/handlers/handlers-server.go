@@ -22,8 +22,7 @@ func (h *Handler) CreateServer(c echo.Context) error {
 
 	if !claims.Privileges.CanCreateServer {
 		return c.JSON(http.StatusUnauthorized, Map{
-			"errror": "Invalid request",
-			"code":   ErrUnauthorized,
+			"error": ErrUnauthorized,
 		})
 	}
 
@@ -32,16 +31,14 @@ func (h *Handler) CreateServer(c echo.Context) error {
 	if err != nil {
 		log.Printf("WARNING [Router] Unable to bind to model: %v\n", err)
 		return c.JSON(http.StatusBadRequest, Map{
-			"error": "Invalid request",
-			"code":  ErrBind,
+			"error": ErrBind,
 		})
 	}
 
 	if server.IsEmpty() {
 		log.Println("WARNING [Router] Missing/empty data to create server")
 		return c.JSON(http.StatusBadRequest, Map{
-			"error": "Invalid request",
-			"code":  ErrEmptyData,
+			"error": ErrEmptyData,
 		})
 	}
 
@@ -52,20 +49,17 @@ func (h *Handler) CreateServer(c echo.Context) error {
 		// TODO <2020/10/09>: Optimize this FOR SURE
 		if strings.HasPrefix(err.Error(), "Error 1062") {
 			return c.JSON(http.StatusBadRequest, Map{
-				"error": "Invalid request",
-				"code":  ErrServernameTaken,
+				"error": ErrServernameTaken,
 			})
 		}
 
 		return c.JSON(http.StatusInternalServerError, Map{
-			"errror": "Internal server error",
-			"code":   ErrCreateServer,
+			"error": ErrCreateServer,
 		})
 	}
 
 	return c.JSON(http.StatusOK, Map{
-		"status": "Success",
-		"code":   StatusServerCreated,
+		"status": StatusServerCreated,
 	})
 }
 
@@ -76,15 +70,13 @@ func (h *Handler) GetServer(c echo.Context) error {
 		log.Printf("ERROR [Router] Failed to get server: %v\n", err)
 
 		if err == gorm.ErrRecordNotFound {
-			return c.JSON(http.StatusBadRequest, Map{
-				"error": "Invalid request",
-				"code":  "",
+			return c.JSON(http.StatusNotFound, Map{
+				"error": ErrServerNotFound,
 			})
 		}
 
 		return c.JSON(http.StatusInternalServerError, Map{
-			"errror": "Internal server error",
-			"code":   "",
+			"error": ErrInternal,
 		})
 	}
 
@@ -99,8 +91,7 @@ func (h *Handler) GetServers(c echo.Context) error {
 
 	if !claims.Privileges.CanSeeAllServers {
 		return c.JSON(http.StatusUnauthorized, Map{
-			"errror": "Invalid request",
-			"code":   ErrUnauthorized,
+			"error": ErrUnauthorized,
 		})
 	}
 
@@ -108,8 +99,7 @@ func (h *Handler) GetServers(c echo.Context) error {
 	if err != nil {
 		log.Printf("ERROR [Router] Failed to get servers: %v\n", err)
 		return c.JSON(http.StatusInternalServerError, Map{
-			"errror": "Internal server error",
-			"code":   "",
+			"error": ErrInternal,
 		})
 	}
 
@@ -129,8 +119,7 @@ func (h *Handler) DeleteServer(c echo.Context) error {
 
 	if !claims.Privileges.CanDeleteServer {
 		return c.JSON(http.StatusUnauthorized, Map{
-			"errror": "Invalid request",
-			"code":   ErrUnauthorized,
+			"error": ErrUnauthorized,
 		})
 	}
 
@@ -138,8 +127,7 @@ func (h *Handler) DeleteServer(c echo.Context) error {
 	if err != nil {
 		log.Printf("ERROR [Router] Failed to delete server: %v\n", err)
 		return c.JSON(http.StatusInternalServerError, Map{
-			"errror": "Internal server error",
-			"code":   "",
+			"error": ErrInternal,
 		})
 	}
 

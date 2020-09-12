@@ -26,7 +26,7 @@ func NewService() Service {
 }
 
 // HashPassword returns the Argon2-hashed password or an error
-func (s Service) HashPassword(user *models.User) error {
+func (s Service) HashPassword(user *models.SignupUser) error {
 	h, err := s.hash.Hash(user.Password)
 	if err != nil {
 		return err

@@ -23,21 +23,24 @@ import (
 type ErrorCode string
 
 const (
+	ErrInternal        ErrorCode = "internal-error"
 	ErrBind            ErrorCode = "bind-error"
 	ErrEmptyData       ErrorCode = "empty-data"
 	ErrInvalidData     ErrorCode = "invalid-data"
+	ErrGetUser         ErrorCode = "get-user-error"
 	ErrHashPassword    ErrorCode = "hash-error"
 	ErrCreateUser      ErrorCode = "create-user-error"
 	ErrUsernameTaken   ErrorCode = "username-taken"
-	ErrServernameTaken ErrorCode = "servername-taken"
-	ErrRoomnameTaken   ErrorCode = "roomname-taken"
-	ErrGetUser         ErrorCode = "get-user-error"
 	ErrUnauthorized    ErrorCode = "unauthorized"
 	ErrTwoFA           ErrorCode = "2fa-error"
 	ErrJWT             ErrorCode = "jwt-error"
-	ErrCreateInvite    ErrorCode = "create-invite-error"
+	ErrServernameTaken ErrorCode = "servername-taken"
 	ErrCreateServer    ErrorCode = "create-server-error"
+	ErrServerNotFound  ErrorCode = "server-not-found"
+	ErrRoomnameTaken   ErrorCode = "roomname-taken"
 	ErrCreateRoom      ErrorCode = "create-room-error"
+	ErrRoomNotFound    ErrorCode = "room-not-found"
+	ErrCreateInvite    ErrorCode = "create-invite-error"
 )
 
 type StatusCode string
@@ -46,6 +49,8 @@ const (
 	StatusRegistered    StatusCode = "registered"
 	StatusServerCreated StatusCode = "server-created"
 	StatusRoomCreated   StatusCode = "room-created"
+	StatusServerDeleted StatusCode = "server-deleted"
+	StatusRoomDeleted   StatusCode = "room-deleted"
 )
 
 // NOTE(Techassi): Maybe split handlers for specific handler groups so we dont need to
@@ -68,9 +73,9 @@ type Map map[string]interface{}
 func New(store *store.Store, config *config.Config) *Handler {
 	// Create services
 	is := invite.NewService(store, *config)
+	us := user.NewService(store, *config)
 	ss := server.NewService(store)
 	rs := room.NewService(store)
-	us := user.NewService(store)
 	as := auth.NewService()
 
 	return &Handler{

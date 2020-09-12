@@ -87,18 +87,26 @@ func (s *Store) Migrate() error {
 
 // GetSettings returns the settings or creates a new default entry in the database
 func (s *Store) GetSettings() (*Settings, error) {
+	if s.settings != nil {
+		return s.settings, nil
+	}
+
+	// TODO <2020/12/09>: Clean this mess up
 	settings := new(Settings)
-	err := s.Ctx().Last(settings).Error
+	err := s.Ctx().First(settings).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
-			err := s.db.WithContext(context.Background()).Create(DefaultSettings).Error
+			err := s.Ctx().Create(DefaultSettings).Error
 			if err != nil {
 				return nil, err
 			}
+			s.settings = DefaultSettings
 			return DefaultSettings, nil
 		}
 		return nil, err
 	}
+
+	s.settings = settings
 	return settings, nil
 }
 

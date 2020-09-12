@@ -8,10 +8,12 @@ package avatar
 
 import (
 	"image/color"
+	"math/rand"
+	"time"
 )
 
-var pallete = map[string][]color.RGBA{
-	"blue": {
+var Pallete = map[string][]color.RGBA{
+	"blue": { // Blue
 		{3, 63, 99, 255},
 		{40, 102, 110, 255},
 		{80, 197, 183, 255},
@@ -38,6 +40,13 @@ func Palettes() []string {
 
 // Palette returns a color palette with the provided 'paletteName'
 func Palette(paletteName string) ([]color.RGBA, bool) {
-	p, ok := pallete[paletteName]
+	p, ok := Pallete[paletteName]
 	return p, ok
+}
+
+// GetRandomPalette returns a random palette
+func GetRandomPalette() string {
+	rand.Seed(time.Now().Unix())
+	r := rand.Intn(len(Pallete) - 1)
+	return Palettes()[r]
 }

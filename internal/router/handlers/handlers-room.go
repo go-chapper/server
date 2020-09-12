@@ -11,9 +11,9 @@ import (
 	"strings"
 
 	"chapper.dev/server/internal/models"
-	"gorm.io/gorm"
 
 	"github.com/labstack/echo/v4"
+	"gorm.io/gorm"
 )
 
 // CreateRoom creates a room
@@ -24,8 +24,7 @@ func (h *Handler) CreateRoom(c echo.Context) error {
 
 	if !claims.Privileges.CanCreateRoom {
 		return c.JSON(http.StatusUnauthorized, Map{
-			"errror": "Invalid request",
-			"code":   ErrUnauthorized,
+			"error": ErrUnauthorized,
 		})
 	}
 
@@ -34,24 +33,21 @@ func (h *Handler) CreateRoom(c echo.Context) error {
 	if err != nil {
 		log.Printf("WARNING [Router] Unable to bind to model: %v\n", err)
 		return c.JSON(http.StatusBadRequest, Map{
-			"error": "Invalid request",
-			"code":  ErrBind,
+			"error": ErrBind,
 		})
 	}
 
 	if room.IsEmpty() {
 		log.Println("WARNING [Router] Missing/empty data to create room")
 		return c.JSON(http.StatusBadRequest, Map{
-			"error": "Invalid request",
-			"code":  ErrEmptyData,
+			"error": ErrEmptyData,
 		})
 	}
 
 	if room.Invalid() {
 		log.Println("WARNING [Router] Invalid data to create room")
 		return c.JSON(http.StatusBadRequest, Map{
-			"error": "Invalid request",
-			"code":  ErrInvalidData,
+			"error": ErrInvalidData,
 		})
 	}
 
@@ -62,20 +58,17 @@ func (h *Handler) CreateRoom(c echo.Context) error {
 		// TODO <2020/10/09>: Optimize this FOR SURE
 		if strings.HasPrefix(err.Error(), "Error 1062") {
 			return c.JSON(http.StatusBadRequest, Map{
-				"error": "Invalid request",
-				"code":  ErrRoomnameTaken,
+				"error": ErrRoomnameTaken,
 			})
 		}
 
 		return c.JSON(http.StatusInternalServerError, Map{
-			"errror": "Internal server error",
-			"code":   ErrCreateRoom,
+			"error": ErrCreateRoom,
 		})
 	}
 
 	return c.JSON(http.StatusOK, Map{
-		"status": "Success",
-		"code":   StatusRoomCreated,
+		"status": StatusRoomCreated,
 	})
 }
 
@@ -86,15 +79,13 @@ func (h *Handler) GetRoom(c echo.Context) error {
 		log.Printf("ERROR [Router] Failed to get server: %v\n", err)
 
 		if err == gorm.ErrRecordNotFound {
-			return c.JSON(http.StatusBadRequest, Map{
-				"error": "Invalid request",
-				"code":  "",
+			return c.JSON(http.StatusNotFound, Map{
+				"error": ErrRoomNotFound,
 			})
 		}
 
 		return c.JSON(http.StatusInternalServerError, Map{
-			"errror": "Internal server error",
-			"code":   "",
+			"errror": ErrInternal,
 		})
 	}
 
@@ -109,8 +100,7 @@ func (h *Handler) GetRooms(c echo.Context) error {
 	if err != nil {
 		log.Printf("ERROR [Router] Failed to get rooms: %v\n", err)
 		return c.JSON(http.StatusInternalServerError, Map{
-			"errror": "Internal server error",
-			"code":   "",
+			"errror": ErrInternal,
 		})
 	}
 
@@ -126,5 +116,23 @@ func (h *Handler) UpdateRoom(c echo.Context) error {
 
 // DeleteRoom deletes a room identified by it's name
 func (h *Handler) DeleteRoom(c echo.Context) error {
-	return nil
+	claims := getClaimes(c)
+
+	if !claims.Privileges.CanDeleteRoom {
+		return c.JSON(http.StatusUnauthorized, Map{
+			"errror": ErrUnauthorized,
+		})
+	}
+
+	err := h.roomService.DeleteRoom(c.Param("server-hash"), c.Param("room-hash"))
+	if err != nil {
+		log.Printf("ERROR [Router] Failed to delete room: %v\n", err)
+		return c.JSON(http.StatusInternalServerError, Map{
+			"errror": ErrInternal,
+		})
+	}
+
+	return c.JSON(http.StatusOK, Map{
+		"status": StatusRoomDeleted,
+	})
 }

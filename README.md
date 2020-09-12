@@ -19,7 +19,7 @@ command.
 ## Current work
 
 -   Installer (Add automatic frontend pulling and building)
--   Rework User, Role and Privileges associations
+-   Think about direct struct
 
 ## Ideas
 
