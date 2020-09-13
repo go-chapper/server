@@ -14,6 +14,7 @@ import (
 	"chapper.dev/server/internal/services/server"
 	"chapper.dev/server/internal/services/user"
 	"chapper.dev/server/internal/store"
+	"chapper.dev/server/internal/transport/signaling"
 
 	j "github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
@@ -41,6 +42,8 @@ const (
 	ErrCreateRoom      ErrorCode = "create-room-error"
 	ErrRoomNotFound    ErrorCode = "room-not-found"
 	ErrCreateInvite    ErrorCode = "create-invite-error"
+	ErrCreateWebsocket ErrorCode = "create-websocket-error"
+	ErrCreateDirect    ErrorCode = "create-direct-error"
 )
 
 type StatusCode string
@@ -59,6 +62,7 @@ const (
 // Handler provides an interface to handle different HTTP request
 type Handler struct {
 	config        *config.Config
+	hub           *signaling.Hub
 	userService   user.Service
 	authService   auth.Service
 	inviteService invite.Service
@@ -70,7 +74,7 @@ type Handler struct {
 type Map map[string]interface{}
 
 // New returns a new handler with all required services injected
-func New(store *store.Store, config *config.Config) *Handler {
+func New(store *store.Store, config *config.Config, hub *signaling.Hub) *Handler {
 	// Create services
 	is := invite.NewService(store, *config)
 	us := user.NewService(store, *config)
@@ -80,6 +84,7 @@ func New(store *store.Store, config *config.Config) *Handler {
 
 	return &Handler{
 		config:        config,
+		hub:           hub,
 		userService:   us,
 		authService:   as,
 		inviteService: is,

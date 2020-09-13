@@ -2,6 +2,10 @@
 PATH   = ""
 PREFIX = "" # defaults to 'Chapper'
 
+[turn]
+PUBLIC_IP = "127.0.0.1"
+PORT      = 0
+
 [store]
 USER     = ""
 PASSWORD = ""

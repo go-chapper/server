@@ -13,7 +13,7 @@ import (
 )
 
 var Pallete = map[string][]color.RGBA{
-	"blue": { // Blue
+	"blue": {
 		{3, 63, 99, 255},
 		{40, 102, 110, 255},
 		{80, 197, 183, 255},

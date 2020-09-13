@@ -12,6 +12,7 @@ import (
 	"chapper.dev/server/internal/config"
 	"chapper.dev/server/internal/modules/jwt"
 	"chapper.dev/server/internal/router/handlers"
+	"chapper.dev/server/internal/transport/signaling"
 	"chapper.dev/server/internal/utils"
 
 	"github.com/labstack/echo/v4"
@@ -20,13 +21,15 @@ import (
 )
 
 // Router is the top-level router instance wrapping it's dependencies
+// TODO <2020/12/09>: Think about a better way to pass in the broadcatser hub
 type Router struct {
 	config *config.Config
 	echo   *echo.Echo
+	hub    *signaling.Hub
 }
 
 // New creates a new router instance and returns it
-func New(c *config.Config) *Router {
+func New(c *config.Config, hub *signaling.Hub) *Router {
 	e := echo.New()
 
 	// Set debug mode (only for development)
@@ -55,6 +58,7 @@ func New(c *config.Config) *Router {
 	return &Router{
 		config: c,
 		echo:   e,
+		hub:    hub,
 	}
 }
 
@@ -93,6 +97,11 @@ func (r *Router) AddRoutes(handle *handlers.Handler) {
 	// PUBLIC KEY
 	key := r.echo.Group("/key")
 	key.GET("/:username", handle.GetKey, jwtware)
+
+	// NOTIFY
+	notify := r.echo.Group("/notify")
+	notify.GET("", handle.GetNotifyChannel)
+	notify.POST("", handle.Notify)
 
 	//// API ////
 	api := r.echo.Group("/api", jwtware)
@@ -143,5 +152,6 @@ func (r *Router) AddRoutes(handle *handlers.Handler) {
 
 // Run starts the HTTP Server or returns an error
 func (r *Router) Run() error {
+	r.hub.Run()
 	return r.echo.Start(fmt.Sprintf(":%d", r.config.Router.Port))
 }

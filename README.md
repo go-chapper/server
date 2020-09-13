@@ -18,8 +18,7 @@ command.
 
 ## Current work
 
--   Installer (Add automatic frontend pulling and building)
--   Think about direct struct
+-   WebSocket Broadcaster
 
 ## Ideas
 

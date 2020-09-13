@@ -15,6 +15,8 @@ import (
 	"chapper.dev/server/internal/router"
 	"chapper.dev/server/internal/router/handlers"
 	"chapper.dev/server/internal/store"
+	"chapper.dev/server/internal/transport/signaling"
+	"chapper.dev/server/internal/transport/turn"
 
 	"github.com/spf13/cobra"
 )
@@ -51,9 +53,21 @@ var runCmd = &cobra.Command{
 			log.Fatalf("ERROR [Store] Failed to migrate: %v\n", err)
 		}
 
-		r := router.New(c)
-		h := handlers.New(s, c)
+		hub := signaling.New()
+
+		r := router.New(c, hub)
+		h := handlers.New(s, c, hub)
 		r.AddRoutes(h)
+
+		t, err := turn.New(c.Turn.PublicIP, c.Router.Domain, "udp4", c.Turn.Port)
+		if err != nil {
+			log.Fatalf("ERROR [Turn] Failed to init TURN server: %v\n", err)
+		}
+
+		err = t.Run()
+		if err != nil {
+			log.Fatalf("ERROR [Turn] Failed to start TURN server: %v\n", err)
+		}
 
 		err = r.Run()
 		if err != nil {

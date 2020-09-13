@@ -6,6 +6,11 @@
 package models
 
 type Direct struct {
-	Hash string `json:"hash" gorm:"primaryKey"`
-	Name string `json:"name"`
+	Caller string `json:"caller"`
+	Callee string `json:"callee"`
+	// SessionDescription string `json:"session_description"`
+}
+
+func (d *Direct) IsEmpty() bool {
+	return d.Caller == "" || d.Callee == ""
 }

@@ -18,6 +18,7 @@ import (
 
 type Config struct {
 	Log     LogOptions
+	Turn    TurnOptions
 	Store   StoreOptions
 	Router  RouterOptions
 	General GeneralOptions
@@ -26,6 +27,11 @@ type Config struct {
 type LogOptions struct {
 	Path   string `toml:"PATH"`
 	Prefix string `toml:"PREFIX"`
+}
+
+type TurnOptions struct {
+	PublicIP string `toml:"PUBLIC_IP"`
+	Port     int    `toml:"PORT"`
 }
 
 type StoreOptions struct {
