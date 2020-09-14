@@ -90,6 +90,33 @@ func Superadmin() Role {
 	}
 }
 
+// Basic returns the basic user role
+func Basic() Role {
+	return Role{
+		Name:        "User",
+		Description: "",
+		Privileges: Privileges{
+			CanCreateServer:       false,
+			CanDeleteServer:       false,
+			CanEditServer:         false,
+			CanSeeAllServers:      false,
+			CanCreateRoom:         false,
+			CanDeleteRoom:         false,
+			CanEditRoom:           false,
+			CanCreateInvite:       false,
+			CanDeleteInvite:       false,
+			CanKickUserFromRoom:   false,
+			CanKickUserFromServer: false,
+			CanBanUserFromRoom:    false,
+			CanBanUserFromServer:  false,
+			CanCreateRole:         false,
+			CanDeleteRole:         false,
+			CanAssignRoleToUser:   false,
+			CanRemoveRoleFromUser: false,
+		},
+	}
+}
+
 // IsEmpty returns if some or all values are empty
 func (u *SignupUser) IsEmpty() bool {
 	return u.Username == "" || u.Password == "" || u.Email == "" || u.PublicKey == ""

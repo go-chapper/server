@@ -60,6 +60,8 @@ func (s Service) CreateUser(newUser *models.SignupUser) error {
 		if err != nil {
 			return err
 		}
+	} else {
+		user.Role = append(user.Role, models.Basic())
 	}
 
 	err = s.store.CreateUser(user)

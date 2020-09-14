@@ -1,4 +1,4 @@
-// Copyright © 2020 Techassi
+// Copyright (c) 2020-present Techassi
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 
@@ -31,6 +31,16 @@ type Connection struct {
 	closed bool
 }
 
+// Send sends a message to the underlying connection
+func (c *Connection) Send(m *Message) {
+	b, err := json.Marshal(m)
+	if err != nil {
+		return
+	}
+	c.send <- b
+}
+
+// Close closes the connection
 func (c *Connection) Close() {
 	if !c.closed {
 		if err := c.ws.Close(); err != nil {
@@ -42,10 +52,10 @@ func (c *Connection) Close() {
 	}
 }
 
+// ListenRead listens for incoming messages
 func (c *Connection) ListenRead() {
 	defer func() {
 		c.hub.unregister <- c
-		c.Close()
 	}()
 	c.ws.SetReadLimit(MaxMessageSize)
 	if err := c.ws.SetReadDeadline(time.Now().Add(PongWait)); err != nil {
@@ -63,16 +73,17 @@ func (c *Connection) ListenRead() {
 			break
 		}
 
-		s := &Subscription{connection: c}
-		if err := json.Unmarshal(message, s); err != nil {
+		m := &Message{connection: c}
+		if err := json.Unmarshal(message, m); err != nil {
 			fmt.Println(err)
 			// c.hub.log.Println("[ERROR] invalid data sent for subscription:", string(message))
 			continue
 		}
-		c.hub.Subscribe(s)
+		c.hub.Broadcast <- m
 	}
 }
 
+// ListenWrite sends messages send to this connection
 func (c *Connection) ListenWrite() {
 	write := func(mt int, payload []byte) error {
 		if err := c.ws.SetWriteDeadline(time.Now().Add(WriteWait)); err != nil {
@@ -101,7 +112,7 @@ func (c *Connection) ListenWrite() {
 				return
 			}
 		case <-ticker.C:
-			if err := write(websocket.PingMessage, []byte{}); err != nil {
+			if err := write(websocket.PingMessage, nil); err != nil {
 				fmt.Println(err)
 				// c.hub.log.Println("[DEBUG] failed to ping socket:", err)
 				return

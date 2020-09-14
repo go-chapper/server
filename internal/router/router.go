@@ -99,9 +99,9 @@ func (r *Router) AddRoutes(handle *handlers.Handler) {
 	key.GET("/:username", handle.GetKey, jwtware)
 
 	// NOTIFY
-	notify := r.echo.Group("/notify")
-	notify.GET("", handle.GetNotifyChannel)
-	notify.POST("", handle.Notify)
+	signaling := r.echo.Group("/signaling")
+	signaling.GET("/token", handle.GetSignalingToken, jwtware)
+	signaling.GET("/ws", handle.GetSignalingChannel)
 
 	//// API ////
 	api := r.echo.Group("/api", jwtware)

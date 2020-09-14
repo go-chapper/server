@@ -7,21 +7,16 @@ package handlers
 
 import (
 	"log"
+	"net/http"
 
-	"github.com/gorilla/websocket"
 	"github.com/labstack/echo/v4"
 )
 
-var upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
-}
-
-// GetNotifyChannel returns a new websocket
-func (h *Handler) GetNotifyChannel(c echo.Context) error {
+func (h *Handler) GetSignalingChannel(c echo.Context) error {
 	conn, err := h.hub.CreateConnection(c.Response(), c.Request())
 	if err != nil {
 		log.Printf("ERROR [Router] Failed to upgrade connection: %v\n", err)
+		return err
 	}
 
 	go h.hub.Register(conn)
@@ -31,6 +26,19 @@ func (h *Handler) GetNotifyChannel(c echo.Context) error {
 	return nil
 }
 
-func (h *Handler) Notify(c echo.Context) error {
-	return nil
+func (h *Handler) GetSignalingToken(c echo.Context) error {
+	claims := getClaimes(c)
+
+	// TODO <2020/13/09>: Add check if callee is blocked and/or the caller is blocked by callee
+
+	t, err := h.hub.Token(claims.Username)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, Map{
+			"error": ErrCreateDirect,
+		})
+	}
+
+	return c.JSON(http.StatusOK, Map{
+		"token": t,
+	})
 }

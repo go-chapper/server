@@ -8,7 +8,6 @@
 package signaling
 
 import (
-	"fmt"
 	"net/http"
 	"sync"
 
@@ -24,40 +23,38 @@ var (
 
 type Hub struct {
 	sync.Mutex
-	tokens      map[string]string           // Authentication tokens
-	connections map[*Connection]*Subscriber // Active connections
-	subscribers map[string]*Subscriber      // Active subscribers
+
+	tokens map[string]string    // Auth token lookup
+	conns  map[*Connection]bool // Active connections
+	peers  map[string]*Peer     // Active peers
 
 	wsFactory  websocket.Upgrader // Websocket factory
 	register   chan *Connection   // Register channel
 	unregister chan *Connection   // Unregister channel
-	subscribe  chan *Subscription // Subscribe channel
 
-	Broadcast chan *Message // Broadcast channel to deliver messages
+	Broadcast chan *Message // Broadcast channel to distribute messages
 }
 
-type Message struct {
-	Data  interface{} `json:"data"`
-	Topic string      `json:"topic"`
+type Peer struct {
+	Username   string
+	Token      string
+	connection *Connection
 }
 
-// New returns a new Hub
 func New() *Hub {
 	h := &Hub{
-		tokens:      make(map[string]string),
-		connections: make(map[*Connection]*Subscriber),
-		subscribers: make(map[string]*Subscriber),
-		register:    make(chan *Connection),
-		unregister:  make(chan *Connection),
-		subscribe:   make(chan *Subscription),
-		Broadcast:   make(chan *Message),
+		tokens:     make(map[string]string),
+		conns:      make(map[*Connection]bool),
+		peers:      make(map[string]*Peer),
+		register:   make(chan *Connection),
+		unregister: make(chan *Connection),
+		Broadcast:  make(chan *Message),
 	}
 
-	factory := websocket.Upgrader{
+	h.wsFactory = websocket.Upgrader{
 		ReadBufferSize:  ReadBufferSize,
 		WriteBufferSize: WriteBufferSize,
 	}
-	h.wsFactory = factory
 
 	return h
 }
@@ -67,28 +64,24 @@ func (h *Hub) Run() {
 		for {
 			select {
 			case c := <-h.register:
-				fmt.Println(c)
-				// h.doRegister(c)
+				h.handleRegister(c)
 			case c := <-h.unregister:
-				fmt.Println(c)
-				// h.doUnregister(c)
+				h.handleUnregister(c)
 			case m := <-h.Broadcast:
-				fmt.Println(m)
-				// h.doBroadcast(m)
-			case s := <-h.subscribe:
-				fmt.Println(s.Username, s.Token, h.tokens[s.Username])
-				// h.doSubscribe(s)
+				h.handleMessage(m)
 			}
 		}
 	}()
 }
 
+// Register registers a new connection
 func (h *Hub) Register(c *Connection) {
 	h.register <- c
 }
 
-func (h *Hub) Subscribe(s *Subscription) {
-	h.subscribe <- s
+// Register registers a new connection
+func (h *Hub) Unregister(c *Connection) {
+	h.unregister <- c
 }
 
 // Token returns a cryptographically secure random string
@@ -109,6 +102,7 @@ func (h *Hub) Token(key string) (string, error) {
 	return s, nil
 }
 
+// CreateConnection creates a new connection and returns it
 func (h *Hub) CreateConnection(w http.ResponseWriter, r *http.Request) (*Connection, error) {
 	ws, err := h.wsFactory.Upgrade(w, r, nil)
 	if err != nil {
