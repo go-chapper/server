@@ -14,7 +14,7 @@ type User struct {
 	Username       string `json:"username" gorm:"primaryKey"`
 	Password       string `json:"password"`
 	Email          string `json:"email"`
-	EmailVerified  bool   `json:"email_verified"`
+	EmailVerified  bool   `json:"emailVerified"`
 	Avatar         string `json:"avatar"`
 	PublicKey      string `json:"-"`
 	TwoFASecret    string `json:"-"`
@@ -26,20 +26,20 @@ type SignupUser struct {
 	Username  string `json:"username"`
 	Password  string `json:"password"`
 	Email     string `json:"email"`
-	PublicKey string `json:"public_key"`
+	PublicKey string `json:"publicKey"`
 }
 
 // Role specifies a role which is used for rights management
 type Role struct {
-	ID          uint       `gorm:"primaryKey"`
+	ID          uint       `json:"-" gorm:"primaryKey"`
 	Name        string     `json:"name"`
 	Description string     `json:"description"`
-	Privileges  Privileges `gorm:"foreignKey:RoleID;references:id"`
+	Privileges  Privileges `json:"privileges" gorm:"foreignKey:RoleID;references:id"`
 }
 
 // Privileges manages privileges which each role has
 type Privileges struct {
-	ID                    uint `gorm:"primaryKey"`
+	ID                    uint `json:"-" gorm:"primaryKey"`
 	RoleID                uint `json:"-"`
 	CanCreateServer       bool `json:"can_create_server"`
 	CanDeleteServer       bool `json:"can_delete_server"`
@@ -119,7 +119,7 @@ func Basic() Role {
 
 // IsEmpty returns if some or all values are empty
 func (u *SignupUser) IsEmpty() bool {
-	return u.Username == "" || u.Password == "" || u.Email == "" || u.PublicKey == ""
+	return u.Username == "" || u.Password == "" || u.PublicKey == ""
 }
 
 // IsLoginEmpty returns if all required data is set to login a user (username and

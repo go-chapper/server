@@ -45,6 +45,11 @@ func New(c *config.Config, hub *signaling.Hub) *Router {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
+	// Enable CORS
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"http://localhost:8080", "chapper://."},
+	}))
+
 	// Enable GZIP compression
 	if c.Router.EnableGZIP {
 		e.Use(middleware.GzipWithConfig(middleware.GzipConfig{
@@ -77,6 +82,9 @@ func (r *Router) AddRoutes(handle *handlers.Handler) {
 
 	// INVITE
 	r.echo.GET("/i/:invite", handle.Invite)
+
+	// Phone home
+	r.echo.GET("/et", handle.Ping)
 
 	// MEDIA
 	media := r.echo.Group("/media")
@@ -130,13 +138,6 @@ func (r *Router) AddRoutes(handle *handlers.Handler) {
 	server.GET("/:server-hash/rooms/:room-hash", handle.GetRoom)
 	server.PUT("/:server-hash/rooms", handle.CreateRoom)
 	server.GET("/:server-hash/rooms", handle.GetRooms)
-
-	// DIRECT
-	direct := v1.Group("/direct")
-	direct.DELETE("/:direct-hash", handle.DeleteDirect)
-	direct.POST("/:direct-hash", handle.UpdateDirect)
-	direct.GET("/:direct-hash", handle.GetDirect)
-	direct.PUT("", handle.CreateDirect)
 
 	// AUTH
 	auth := r.echo.Group("/auth")

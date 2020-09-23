@@ -85,17 +85,6 @@ func (h *Hub) handleMessage(m *Message) {
 		}
 
 		to.connection.Send(m)
-	case "text-answer":
-		if m.InvalidSDP() {
-			return
-		}
-
-		to, ok := h.peers[m.To]
-		if !ok {
-			return
-		}
-
-		to.connection.Send(m)
 	case "new-ice-candidate":
 		if m.InvalidSDP() {
 			return

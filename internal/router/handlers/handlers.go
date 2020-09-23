@@ -35,6 +35,7 @@ const (
 	ErrUnauthorized    ErrorCode = "unauthorized"
 	ErrTwoFA           ErrorCode = "2fa-error"
 	ErrJWT             ErrorCode = "jwt-error"
+	ErrJWTExpired      ErrorCode = "jwt-expired"
 	ErrServernameTaken ErrorCode = "servername-taken"
 	ErrCreateServer    ErrorCode = "create-server-error"
 	ErrServerNotFound  ErrorCode = "server-not-found"
@@ -54,6 +55,7 @@ const (
 	StatusRoomCreated   StatusCode = "room-created"
 	StatusServerDeleted StatusCode = "server-deleted"
 	StatusRoomDeleted   StatusCode = "room-deleted"
+	StatusJWTRefreshed  StatusCode = "jwt-refreshed"
 )
 
 // NOTE(Techassi): Maybe split handlers for specific handler groups so we dont need to
@@ -96,4 +98,8 @@ func New(store *store.Store, config *config.Config, hub *signaling.Hub) *Handler
 func getClaimes(c echo.Context) *jwt.Claims {
 	user := c.Get("user").(*j.Token)
 	return user.Claims.(*jwt.Claims)
+}
+
+func getToken(c echo.Context) *j.Token {
+	return c.Get("user").(*j.Token)
 }

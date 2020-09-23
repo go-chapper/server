@@ -7,8 +7,8 @@ package models
 
 // RefreshToken is used to validate a refresh token
 type RefreshToken struct {
-	Username string
-	Token    string
+	Username string `json:"username"`
+	Token    string `json:"token"`
 }
 
 func (r *RefreshToken) IsEmpty() bool {

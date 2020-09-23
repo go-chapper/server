@@ -63,23 +63,47 @@ func (h *Handler) AuthRegister(c echo.Context) error {
 }
 
 // AuthRefresh refreshes the JWT token
+// TODO <2020/15/09>: Maybe use the provided token (in header) to validate this request
 func (h *Handler) AuthRefresh(c echo.Context) error {
-	refresh := new(models.RefreshToken)
-	err := c.Bind(refresh)
-	if err != nil {
-		log.Printf("WARNING [Router] Unable to bind to model: %v\n", err)
-		return c.JSON(http.StatusBadRequest, Map{
-			"error": ErrBind,
-		})
-	}
+	// inputString, err := getToken(c).SignedString(h.config.Router.JWTSigningKey)
 
-	if refresh.IsEmpty() {
-		log.Println("WARNING [Router] Missing/empty data to refresh token")
-		return c.JSON(http.StatusBadRequest, Map{
-			"error": ErrEmptyData,
-		})
-	}
+	// // Parse the provided old token
+	// oldToken, err := h.authService.ParseJWT(
+	// 	input.S,
+	// 	h.config.Router.JWTSigningKey,
+	// 	jwt.Claims{},
+	// )
+	// if err != nil {
+	// 	log.Printf("ERROR [Router] Failed to parse JWT: %v\n", err)
+	// 	return c.JSON(http.StatusBadRequest, Map{
+	// 		"error": ErrJWT,
+	// 	})
+	// }
 
+	// // Check if token is expired
+	// if oldToken.Claims().ExpiresAt < time.Now().UTC().Unix() {
+	// 	return c.JSON(http.StatusBadRequest, Map{
+	// 		"error": ErrJWTExpired,
+	// 	})
+	// }
+
+	// // Check if the username matches
+	// if oldToken.Claims().Username != refresh.Username {
+	// 	return c.JSON(http.StatusUnauthorized, Map{
+	// 		"error": ErrUnauthorized,
+	// 	})
+	// }
+
+	// // Create new JWT token
+	// t := h.authService.NewJWT(h.config.Router.JWTSigningKey, &jwt.Claims{
+	// 	Username:   oldToken.Claims().Username,
+	// 	Privileges: oldToken.Claims().Privileges,
+	// })
+
+	// return c.JSON(http.StatusOK, Map{
+	// 	"status": StatusJWTRefreshed,
+	// 	"token":  t,
+	// })
 	return nil
 }
 
@@ -128,8 +152,8 @@ func (h *Handler) AuthLogin(c echo.Context) error {
 		}
 
 		return c.JSON(http.StatusOK, Map{
-			"action": "code",
-			"token":  temp,
+			"state": "code",
+			"token": temp,
 		})
 	}
 
@@ -155,7 +179,7 @@ func (h *Handler) AuthLogin(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, Map{
-		"action": "login",
-		"token":  signed,
+		"state": "authenticated",
+		"token": signed,
 	})
 }

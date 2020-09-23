@@ -26,8 +26,8 @@ type JWT struct {
 
 // Claims is a custom claims struct
 type Claims struct {
-	Username   string `json:"username"`
-	Privileges models.Privileges
+	Username   string            `json:"username"`
+	Privileges models.Privileges `json:"privileges"`
 	StandardClaims
 }
 

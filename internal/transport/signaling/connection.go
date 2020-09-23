@@ -8,6 +8,7 @@ package signaling
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -45,7 +46,7 @@ func (c *Connection) Close() {
 	if !c.closed {
 		if err := c.ws.Close(); err != nil {
 			fmt.Println(err)
-			// c.hub.log.Println("[DEBUG] websocket was already closed:", err)
+			log.Println("INFO [Router] Websocket was already closed:", err)
 		}
 		close(c.send)
 		c.closed = true
@@ -59,8 +60,7 @@ func (c *Connection) ListenRead() {
 	}()
 	c.ws.SetReadLimit(MaxMessageSize)
 	if err := c.ws.SetReadDeadline(time.Now().Add(PongWait)); err != nil {
-		fmt.Println(err)
-		// c.hub.log.Println("[ERROR] failed to set socket read deadline:", err)
+		log.Println("WARNING [Router] Failed to set socket read deadline:", err)
 	}
 	c.ws.SetPongHandler(func(string) error {
 		return c.ws.SetReadDeadline(time.Now().Add(PongWait))
@@ -68,15 +68,13 @@ func (c *Connection) ListenRead() {
 	for {
 		_, message, err := c.ws.ReadMessage()
 		if err != nil {
-			fmt.Println(err)
-			// c.hub.log.Println("[DEBUG] read message error:", err)
+			log.Println("ERROR [Router] Read message error:", err)
 			break
 		}
 
 		m := &Message{connection: c}
 		if err := json.Unmarshal(message, m); err != nil {
-			fmt.Println(err)
-			// c.hub.log.Println("[ERROR] invalid data sent for subscription:", string(message))
+			log.Println("ERROR [Router] Invalid data sent for message:", string(message))
 			continue
 		}
 		c.hub.Broadcast <- m
@@ -101,20 +99,17 @@ func (c *Connection) ListenWrite() {
 		case message, ok := <-c.send:
 			if !ok {
 				if err := write(websocket.CloseMessage, []byte{}); err != nil {
-					fmt.Println(err)
-					// c.hub.log.Println("[DEBUG] socket already closed:", err)
+					log.Println("WARNING [Router] Socket already closed:", err)
 				}
 				return
 			}
 			if err := write(websocket.TextMessage, message); err != nil {
-				fmt.Println(err)
-				// c.hub.log.Println("[DEBUG] failed to write socket message:", err)
+				log.Println("WARNING [Router] Failed to write socket message:", err)
 				return
 			}
 		case <-ticker.C:
 			if err := write(websocket.PingMessage, nil); err != nil {
-				fmt.Println(err)
-				// c.hub.log.Println("[DEBUG] failed to ping socket:", err)
+				log.Println("WARNING [Router] Failed to ping socket:", err)
 				return
 			}
 		}

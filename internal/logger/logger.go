@@ -1,3 +1,8 @@
+// Copyright (c) 2020-present Techassi
+// Use of this source code is governed by a MIT-style
+// license that can be found in the LICENSE file.
+
+// Package logger provides logging utilities
 package logger
 
 import (
