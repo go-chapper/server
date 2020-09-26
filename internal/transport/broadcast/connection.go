@@ -2,8 +2,8 @@
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 
-// Package signaling provides utilities for WebRTC signaling
-package signaling
+// Package broadcast provides utilities to broadcast messages
+package broadcast
 
 import (
 	"encoding/json"
@@ -28,7 +28,7 @@ var (
 type Connection struct {
 	ws     *websocket.Conn
 	send   chan []byte
-	hub    *Hub
+	hub    Hub
 	closed bool
 }
 
@@ -56,7 +56,7 @@ func (c *Connection) Close() {
 // ListenRead listens for incoming messages
 func (c *Connection) ListenRead() {
 	defer func() {
-		c.hub.unregister <- c
+		c.hub.Unregister(c)
 	}()
 	c.ws.SetReadLimit(MaxMessageSize)
 	if err := c.ws.SetReadDeadline(time.Now().Add(PongWait)); err != nil {
@@ -77,7 +77,7 @@ func (c *Connection) ListenRead() {
 			log.Println("ERROR [Router] Invalid data sent for message:", string(message))
 			continue
 		}
-		c.hub.Broadcast <- m
+		go c.hub.Broadcast(m)
 	}
 }
 

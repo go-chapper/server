@@ -2,19 +2,19 @@
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 
-// Package signaling provides utilities for WebRTC signaling
-package signaling
+// Package broadcast provides utilities to broadcast messages
+package broadcast
 
 import "fmt"
 
-func (h *Hub) handleRegister(c *Connection) {
+func (h *SignalingHub) handleRegister(c *Connection) {
 	h.Lock()
 	defer h.Unlock()
 
 	h.conns[c] = true
 }
 
-func (h *Hub) handleUnregister(c *Connection) {
+func (h *SignalingHub) handleUnregister(c *Connection) {
 	h.Lock()
 	defer h.Unlock()
 
@@ -31,7 +31,7 @@ func (h *Hub) handleUnregister(c *Connection) {
 	fmt.Println("Unregistered connection")
 }
 
-func (h *Hub) handleMessage(m *Message) {
+func (h *SignalingHub) handleMessage(m *Message) {
 	switch m.Topic {
 	case "subscribe":
 		if m.Token == "" || m.Username == "" {

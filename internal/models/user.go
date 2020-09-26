@@ -41,23 +41,23 @@ type Role struct {
 type Privileges struct {
 	ID                    uint `json:"-" gorm:"primaryKey"`
 	RoleID                uint `json:"-"`
-	CanCreateServer       bool `json:"can_create_server"`
-	CanDeleteServer       bool `json:"can_delete_server"`
-	CanEditServer         bool `json:"can_edit_server"`
-	CanSeeAllServers      bool `json:"can_see_all_servers"`
-	CanCreateRoom         bool `json:"can_create_room"`
-	CanDeleteRoom         bool `json:"can_delete_room"`
-	CanEditRoom           bool `json:"can_edit_room"`
-	CanCreateInvite       bool `json:"can_create_invite"`
-	CanDeleteInvite       bool `json:"can_delete_invite"`
-	CanKickUserFromRoom   bool `json:"can_kick_user_from_room"`
-	CanKickUserFromServer bool `json:"can_kick_user_from_server"`
-	CanBanUserFromRoom    bool `json:"can_ban_user_from_room"`
-	CanBanUserFromServer  bool `json:"can_ban_user_from_server"`
-	CanCreateRole         bool `json:"can_create_role"`
-	CanDeleteRole         bool `json:"can_delete_role"`
-	CanAssignRoleToUser   bool `json:"can_assign_role_to_user"`
-	CanRemoveRoleFromUser bool `json:"can_remove_role_from_user"`
+	CanCreateServer       bool `json:"canCreateServer"`
+	CanDeleteServer       bool `json:"canDeleteServer"`
+	CanEditServer         bool `json:"canEditServer"`
+	CanSeeAllServers      bool `json:"canSeeAllServers"`
+	CanCreateRoom         bool `json:"canCreateRoom"`
+	CanDeleteRoom         bool `json:"canDeleteRoom"`
+	CanEditRoom           bool `json:"canEditRoom"`
+	CanCreateInvite       bool `json:"canCreateInvite"`
+	CanDeleteInvite       bool `json:"canDeleteInvite"`
+	CanKickUserFromRoom   bool `json:"canKickUserFromRoom"`
+	CanKickUserFromServer bool `json:"canKickUserFromServer"`
+	CanBanUserFromRoom    bool `json:"canBanUserFromRoom"`
+	CanBanUserFromServer  bool `json:"canBanUserFromServer"`
+	CanCreateRole         bool `json:"canCreateRole"`
+	CanDeleteRole         bool `json:"canDeleteRole"`
+	CanAssignRoleToUser   bool `json:"canAssignRoleToUser"`
+	CanRemoveRoleFromUser bool `json:"canRemoveRoleRromUser"`
 }
 
 // Refer to https://github.com/go-playground/validator/blob/ea924ce89a4774b8017143b34b946db46add9df1/regexes.go#L18

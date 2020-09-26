@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 
+	"chapper.dev/server/internal/models"
 	"github.com/labstack/echo/v4"
 )
 
@@ -23,13 +24,27 @@ func (h *Handler) CreateInvite(c echo.Context) error {
 
 	if !claims.Privileges.CanCreateInvite {
 		return c.JSON(http.StatusUnauthorized, Map{
-			"errror": "Invalid request",
-			"code":   ErrUnauthorized,
+			"error": ErrUnauthorized,
 		})
 	}
 
-	// TODO <2020/08/09>: Dont hardcode server name, get it from request
-	invite, err := h.inviteService.CreateInvite(claims.Username, "Chapper", false)
+	newInvite := new(models.CreateInvite)
+	err := c.Bind(newInvite)
+	if err != nil {
+		log.Printf("WARNING [Router] Unable to bind to model: %v\n", err)
+		return c.JSON(http.StatusBadRequest, Map{
+			"error": ErrBind,
+		})
+	}
+
+	if newInvite.IsEmpty() {
+		log.Println("WARNING [Router] Missing/empty data to create invite")
+		return c.JSON(http.StatusBadRequest, Map{
+			"error": ErrEmptyData,
+		})
+	}
+
+	invite, err := h.inviteService.CreateInvite(claims.Username, newInvite)
 	if err != nil {
 		log.Printf("ERROR [Router] Failed to create invite: %v\n", err)
 		return c.JSON(http.StatusInternalServerError, Map{

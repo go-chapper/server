@@ -16,11 +16,13 @@ import (
 	"chapper.dev/server/internal/store"
 )
 
+// Service wrapps all dependencies of the invite service
 type Service struct {
 	store  *store.Store
 	config config.Config
 }
 
+// NewService returns a new invite service
 func NewService(store *store.Store, config config.Config) Service {
 	return Service{
 		store:  store,
@@ -29,10 +31,10 @@ func NewService(store *store.Store, config config.Config) Service {
 }
 
 // CreateInvite creates a new invite link
-func (s Service) CreateInvite(createdBy, server string, oneTimeUse bool) (*models.Invite, error) {
+func (s Service) CreateInvite(createdBy string, newInvite *models.CreateInvite) (*models.Invite, error) {
 	var (
 		currentTime = time.Now()
-		hash        = hash.Adler32(server + currentTime.String())
+		hash        = hash.Adler32(newInvite.Server + currentTime.String())
 	)
 
 	// TODO <2020/07/09>: Dont hardcode http
@@ -44,11 +46,12 @@ func (s Service) CreateInvite(createdBy, server string, oneTimeUse bool) (*model
 	invite := &models.Invite{
 		CreatedBy:  createdBy,
 		Hash:       hash,
-		Server:     server,
+		Host:       newInvite.Host,
+		Server:     newInvite.Server,
 		URL:        url,
 		URLString:  url.String(),
-		OneTimeUse: oneTimeUse,
-		ExpiresAt:  currentTime.Add(time.Hour),
+		OneTimeUse: newInvite.OneTimeUse,
+		ExpiresAt:  newInvite.ExpiresAt,
 	}
 
 	err = s.store.CreateInvite(invite)

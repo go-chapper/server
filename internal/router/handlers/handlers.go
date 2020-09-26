@@ -14,7 +14,7 @@ import (
 	"chapper.dev/server/internal/services/server"
 	"chapper.dev/server/internal/services/user"
 	"chapper.dev/server/internal/store"
-	"chapper.dev/server/internal/transport/signaling"
+	"chapper.dev/server/internal/transport/broadcast"
 
 	j "github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
@@ -64,7 +64,8 @@ const (
 // Handler provides an interface to handle different HTTP request
 type Handler struct {
 	config        *config.Config
-	hub           *signaling.Hub
+	rtcHub        broadcast.Hub
+	systemHub     broadcast.Hub
 	userService   user.Service
 	authService   auth.Service
 	inviteService invite.Service
@@ -76,7 +77,7 @@ type Handler struct {
 type Map map[string]interface{}
 
 // New returns a new handler with all required services injected
-func New(store *store.Store, config *config.Config, hub *signaling.Hub) *Handler {
+func New(store *store.Store, config *config.Config) *Handler {
 	// Create services
 	is := invite.NewService(store, *config)
 	us := user.NewService(store, *config)
@@ -84,15 +85,25 @@ func New(store *store.Store, config *config.Config, hub *signaling.Hub) *Handler
 	rs := room.NewService(store)
 	as := auth.NewService()
 
+	rtcHub := broadcast.NewSignalingHub()
+	// systemHub := signaling.New()
+
 	return &Handler{
-		config:        config,
-		hub:           hub,
+		config: config,
+		rtcHub: rtcHub,
+		// systemHub:     systemHub,
 		userService:   us,
 		authService:   as,
 		inviteService: is,
 		serverService: ss,
 		roomService:   rs,
 	}
+}
+
+// RunHubs runs the different broadcasting hubs
+func (h *Handler) RunHubs() {
+	h.rtcHub.Run()
+	h.systemHub.Run()
 }
 
 func getClaimes(c echo.Context) *jwt.Claims {

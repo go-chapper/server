@@ -2,10 +2,10 @@
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 
-// Package signaling provides utilities for WebRTC signaling
+// Package broadcast provides utilities to broadcast messages
 // Inspired by https://github.com/DATA-DOG/golang-websocket-hub and
 // https://github.com/gorilla/websocket/tree/master/examples/chat
-package signaling
+package broadcast
 
 // Message describes a message to be sent and received
 type Message struct {

@@ -12,7 +12,6 @@ import (
 	"chapper.dev/server/internal/config"
 	"chapper.dev/server/internal/modules/jwt"
 	"chapper.dev/server/internal/router/handlers"
-	"chapper.dev/server/internal/transport/signaling"
 	"chapper.dev/server/internal/utils"
 
 	"github.com/labstack/echo/v4"
@@ -23,13 +22,13 @@ import (
 // Router is the top-level router instance wrapping it's dependencies
 // TODO <2020/12/09>: Think about a better way to pass in the broadcatser hub
 type Router struct {
-	config *config.Config
-	echo   *echo.Echo
-	hub    *signaling.Hub
+	config  *config.Config
+	echo    *echo.Echo
+	handler *handlers.Handler
 }
 
 // New creates a new router instance and returns it
-func New(c *config.Config, hub *signaling.Hub) *Router {
+func New(c *config.Config) *Router {
 	e := echo.New()
 
 	// Set debug mode (only for development)
@@ -63,7 +62,6 @@ func New(c *config.Config, hub *signaling.Hub) *Router {
 	return &Router{
 		config: c,
 		echo:   e,
-		hub:    hub,
 	}
 }
 
@@ -149,10 +147,12 @@ func (r *Router) AddRoutes(handle *handlers.Handler) {
 
 	// This serves the correct SPA route (even when reloading)
 	r.echo.File("/*", webRoot)
+
+	r.handler = handle
 }
 
 // Run starts the HTTP Server or returns an error
 func (r *Router) Run() error {
-	r.hub.Run()
+	r.handler.RunHubs()
 	return r.echo.Start(fmt.Sprintf(":%d", r.config.Router.Port))
 }

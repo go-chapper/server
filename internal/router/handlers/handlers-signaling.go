@@ -13,13 +13,13 @@ import (
 )
 
 func (h *Handler) GetSignalingChannel(c echo.Context) error {
-	conn, err := h.hub.CreateConnection(c.Response(), c.Request())
+	conn, err := h.rtcHub.CreateConnection(c.Response(), c.Request())
 	if err != nil {
 		log.Printf("ERROR [Router] Failed to upgrade connection: %v\n", err)
 		return err
 	}
 
-	go h.hub.Register(conn)
+	go h.rtcHub.Register(conn)
 	go conn.ListenRead()
 	go conn.ListenWrite()
 
@@ -31,7 +31,7 @@ func (h *Handler) GetSignalingToken(c echo.Context) error {
 
 	// TODO <2020/13/09>: Add check if callee is blocked and/or the caller is blocked by callee
 
-	t, err := h.hub.Token(claims.Username)
+	t, err := h.rtcHub.Token(claims.Username)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, Map{
 			"error": ErrCreateDirect,
