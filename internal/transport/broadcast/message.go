@@ -9,17 +9,18 @@ package broadcast
 
 // Message describes a message to be sent and received
 type Message struct {
-	Username   string `json:"username,omitempty"`
-	Topic      string `json:"topic,omitempty"`
-	Token      string `json:"token,omitempty"`
-	From       string `json:"from,omitempty"`
-	To         string `json:"to,omitempty"`
-	SDP        string `json:"sdp,omitempty"`
-	Accepted   bool   `json:"accepted,omitempty"`
+	Type       string   `json:"type,omitempty"`
+	Username   string   `json:"username,omitempty"`
+	Token      string   `json:"token,omitempty"`
+	From       string   `json:"from,omitempty"`
+	To         []string `json:"to,omitempty"`
+	Data       string   `json:"data,omitempty"`
+	SDP        string   `json:"sdp,omitempty"`
+	Accepted   bool     `json:"accepted,omitempty"`
 	connection *Connection
 }
 
 // InvalidSDP returns if the SDP is invalid
 func (m *Message) InvalidSDP() bool {
-	return m.To == "" || m.SDP == ""
+	return len(m.To) == 0 || m.SDP == ""
 }

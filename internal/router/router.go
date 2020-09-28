@@ -104,10 +104,15 @@ func (r *Router) AddRoutes(handle *handlers.Handler) {
 	key := r.echo.Group("/key")
 	key.GET("/:username", handle.GetKey, jwtware)
 
-	// NOTIFY
+	// SIGNALING
 	signaling := r.echo.Group("/signaling")
 	signaling.GET("/token", handle.GetSignalingToken, jwtware)
 	signaling.GET("/ws", handle.GetSignalingChannel)
+
+	// MESSAGING
+	messaging := r.echo.Group("/messaging")
+	messaging.GET("/token", handle.GetMessagingToken, jwtware)
+	messaging.GET("/ws", handle.GetMessagingChannel)
 
 	//// API ////
 	api := r.echo.Group("/api", jwtware)
@@ -137,7 +142,7 @@ func (r *Router) AddRoutes(handle *handlers.Handler) {
 	server.PUT("/:server-hash/rooms", handle.CreateRoom)
 	server.GET("/:server-hash/rooms", handle.GetRooms)
 
-	// AUTH
+	//// AUTH ////
 	auth := r.echo.Group("/auth")
 	auth.POST("/code/register", handle.AuthRegisterCode)
 	auth.POST("/register", handle.AuthRegister)

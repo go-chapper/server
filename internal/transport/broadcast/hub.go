@@ -33,9 +33,9 @@ type Hub interface {
 type SignalingHub struct {
 	sync.Mutex
 
-	tokens map[string]string    // Auth token lookup
-	conns  map[*Connection]bool // Active connections
-	peers  map[string]*Peer     // Active peers
+	tokens map[string]string      // Auth token lookup
+	conns  map[*Connection]string // Active connections
+	peers  map[string]*Peer       // Active peers
 
 	wsFactory  websocket.Upgrader // Websocket factory
 	register   chan *Connection   // Register channel
@@ -48,9 +48,9 @@ type SignalingHub struct {
 type MessagingHub struct {
 	sync.Mutex
 
-	tokens map[string]string    // Auth token lookup
-	conns  map[*Connection]bool // Active connections
-	peers  map[string]*Peer     // Active peers
+	tokens map[string]string      // Auth token lookup
+	conns  map[*Connection]string // Active connections
+	peers  map[string]*Peer       // Active peers
 
 	wsFactory  websocket.Upgrader // Websocket factory
 	register   chan *Connection   // Register channel
@@ -70,7 +70,7 @@ type Peer struct {
 func NewSignalingHub() *SignalingHub {
 	h := &SignalingHub{
 		tokens:     make(map[string]string),
-		conns:      make(map[*Connection]bool),
+		conns:      make(map[*Connection]string),
 		peers:      make(map[string]*Peer),
 		register:   make(chan *Connection),
 		unregister: make(chan *Connection),
@@ -89,7 +89,7 @@ func NewSignalingHub() *SignalingHub {
 func NewMessagingHub() *MessagingHub {
 	h := &MessagingHub{
 		tokens:     make(map[string]string),
-		conns:      make(map[*Connection]bool),
+		conns:      make(map[*Connection]string),
 		peers:      make(map[string]*Peer),
 		register:   make(chan *Connection),
 		unregister: make(chan *Connection),

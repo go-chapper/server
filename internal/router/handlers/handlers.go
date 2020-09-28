@@ -44,7 +44,6 @@ const (
 	ErrRoomNotFound    ErrorCode = "room-not-found"
 	ErrCreateInvite    ErrorCode = "create-invite-error"
 	ErrCreateWebsocket ErrorCode = "create-websocket-error"
-	ErrCreateDirect    ErrorCode = "create-direct-error"
 )
 
 type StatusCode string
@@ -64,8 +63,8 @@ const (
 // Handler provides an interface to handle different HTTP request
 type Handler struct {
 	config        *config.Config
-	rtcHub        broadcast.Hub
-	systemHub     broadcast.Hub
+	signalingHub  broadcast.Hub
+	messagingHub  broadcast.Hub
 	userService   user.Service
 	authService   auth.Service
 	inviteService invite.Service
@@ -85,13 +84,13 @@ func New(store *store.Store, config *config.Config) *Handler {
 	rs := room.NewService(store)
 	as := auth.NewService()
 
-	rtcHub := broadcast.NewSignalingHub()
-	// systemHub := signaling.New()
+	signalingHub := broadcast.NewSignalingHub()
+	messagingHub := broadcast.NewMessagingHub()
 
 	return &Handler{
-		config: config,
-		rtcHub: rtcHub,
-		// systemHub:     systemHub,
+		config:        config,
+		signalingHub:  signalingHub,
+		messagingHub:  messagingHub,
 		userService:   us,
 		authService:   as,
 		inviteService: is,
@@ -102,8 +101,8 @@ func New(store *store.Store, config *config.Config) *Handler {
 
 // RunHubs runs the different broadcasting hubs
 func (h *Handler) RunHubs() {
-	h.rtcHub.Run()
-	h.systemHub.Run()
+	h.signalingHub.Run()
+	h.messagingHub.Run()
 }
 
 func getClaimes(c echo.Context) *jwt.Claims {
