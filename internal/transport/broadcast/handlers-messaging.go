@@ -28,10 +28,32 @@ func (h *MessagingHub) handleUnregister(c *Connection) {
 
 func (h *MessagingHub) handleMessage(m *Message) {
 	switch m.Type {
+	case "subscribe":
+		if m.Token == "" || m.Username == "" {
+			return
+		}
+
+		t, ok := h.tokens[m.Username]
+		if !ok || t != m.Token {
+			go h.Unregister(m.connection)
+			return
+		}
+
+		h.peers[m.Username] = &Peer{
+			Username:   m.Username,
+			Token:      m.Token,
+			connection: m.connection,
+		}
+		h.conns[m.connection] = m.Username
 	case "status-writing":
 		// Indicate a chat member is writing
 	case "message-text":
 		// Message of type text
+		if len(m.To) == 0 || m.From == "" {
+			return
+		}
+
+		h.Send(m)
 	case "message-media":
 		// Message with media attached
 	default:

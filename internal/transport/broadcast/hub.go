@@ -99,6 +99,12 @@ func NewMessagingHub() *MessagingHub {
 	h.wsFactory = websocket.Upgrader{
 		ReadBufferSize:  ReadBufferSize,
 		WriteBufferSize: WriteBufferSize,
+		CheckOrigin: func(r *http.Request) bool {
+			if r.Header["Origin"][0] == "http://localhost:8080" || r.Header["Origin"][0] == "chapper://." {
+				return true
+			}
+			return false
+		},
 	}
 
 	return h

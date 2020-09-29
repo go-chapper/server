@@ -5,8 +5,6 @@
 // Package broadcast provides utilities to broadcast messages
 package broadcast
 
-import "fmt"
-
 func (h *SignalingHub) handleRegister(c *Connection) {
 	h.Lock()
 	defer h.Unlock()
@@ -47,7 +45,6 @@ func (h *SignalingHub) handleMessage(m *Message) {
 			connection: m.connection,
 		}
 		h.conns[m.connection] = m.Username
-		fmt.Println("Peer added")
 	case "new-chat-offer":
 		// Offers callee to begin a new chat
 		if len(m.To) == 0 || m.From == "" {

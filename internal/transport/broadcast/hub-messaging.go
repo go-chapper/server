@@ -41,6 +41,18 @@ func (h *MessagingHub) Broadcast(m *Message) {
 	h.broadcast <- m
 }
 
+// Send sends the message to one or more receivers
+func (h *MessagingHub) Send(m *Message) {
+	for _, receiver := range m.To {
+		to, ok := h.peers[receiver]
+		if !ok {
+			return
+		}
+
+		to.connection.Send(m)
+	}
+}
+
 // Token returns a cryptographically secure random string
 func (h *MessagingHub) Token(key string) (string, error) {
 	h.Lock()
