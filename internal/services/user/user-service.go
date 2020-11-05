@@ -82,3 +82,7 @@ func (s Service) SaveTempToken(username, token string) error {
 	user.TwoFATempToken = token
 	return s.store.SaveUser(user)
 }
+
+func (s Service) GetUserServers(username string) ([]models.Server, error) {
+	return s.store.GetUserServers(username)
+}

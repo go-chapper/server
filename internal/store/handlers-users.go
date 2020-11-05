@@ -11,12 +11,28 @@ import (
 
 func (s *Store) GetUser(username string) (*models.User, error) {
 	user := new(models.User)
-	return user, s.Ctx().Preload("Role.Privileges").Where("username = ?", username).First(user).Error
+	return user, s.Ctx().
+		Preload("Role.Privileges").
+		Where("username = ?", username).
+		First(user).Error
 }
 
 func (s *Store) GetUserPublicKey(username string) (string, error) {
 	user := new(models.User)
-	return user.PublicKey, s.Ctx().Where("username = ?", username).Select("public_key").First(user).Error
+	return user.PublicKey,
+		s.Ctx().
+			Where("username = ?", username).
+			Select("public_key").
+			First(user).Error
+}
+
+func (s *Store) GetUserServers(username string) ([]models.Server, error) {
+	servers := []models.Server{}
+	err := s.Ctx().
+		Model(models.User{Username: username}).
+		Association("Server").
+		Find(&servers)
+	return servers, err
 }
 
 func (s *Store) CreateUser(user *models.User) error {

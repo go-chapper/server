@@ -150,6 +150,9 @@ func (r *Router) AddRoutes(handle *handlers.Handler) {
 	auth.POST("/login", handle.AuthLogin)
 	auth.POST("/code", handle.AuthCode)
 
+	me := v1.Group("/me")
+	me.GET("/servers", handle.GetUserServers)
+
 	// This serves the correct SPA route (even when reloading)
 	r.echo.File("/*", webRoot)
 
