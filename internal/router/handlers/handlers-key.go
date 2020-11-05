@@ -27,8 +27,5 @@ func (h *Handler) GetKey(c echo.Context) error {
 		})
 	}
 
-	// return c.JSON(http.StatusOK, Map{
-	// 	"publicKey": key,
-	// })
 	return c.String(http.StatusOK, key)
 }

@@ -15,6 +15,7 @@ import (
 // GetUserServers returns all servers the user is a member of
 func (h *Handler) GetUserServers(c echo.Context) error {
 	claims := getClaimes(c)
+
 	servers, err := h.userService.GetUserServers(claims.Username)
 	if err != nil {
 		log.Printf("ERROR [Router] Failed to get servers: %v\n", err)

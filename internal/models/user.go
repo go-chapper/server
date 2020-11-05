@@ -11,16 +11,17 @@ import (
 )
 
 type User struct {
-	Username       string  `json:"username" gorm:"primaryKey"`
-	Password       string  `json:"password"`
-	Email          string  `json:"email"`
-	EmailVerified  bool    `json:"emailVerified"`
-	Avatar         string  `json:"avatar"`
-	PublicKey      string  `json:"-"`
-	TwoFASecret    string  `json:"-"`
-	TwoFATempToken string  `json:"-"`
-	Role           []Role  `gorm:"many2many:user_roles;"`
-	Friends        []*User `json:"-" gorm:"many2many:user_friends"`
+	Username       string    `json:"username" gorm:"primaryKey"`
+	Password       string    `json:"password"`
+	Email          string    `json:"email"`
+	EmailVerified  bool      `json:"emailVerified"`
+	Avatar         string    `json:"avatar"`
+	PublicKey      string    `json:"-"`
+	TwoFASecret    string    `json:"-"`
+	TwoFATempToken string    `json:"-"`
+	Role           []Role    `gorm:"many2many:user_roles;"`
+	Friends        []*User   `json:"-" gorm:"many2many:user_friends"`
+	Servers        []*Server `json:"-" gorm:"many2many:user_servers"`
 }
 
 type SignupUser struct {

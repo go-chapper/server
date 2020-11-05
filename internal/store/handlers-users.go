@@ -30,7 +30,7 @@ func (s *Store) GetUserServers(username string) ([]models.Server, error) {
 	servers := []models.Server{}
 	err := s.Ctx().
 		Model(models.User{Username: username}).
-		Association("Server").
+		Association("Servers").
 		Find(&servers)
 	return servers, err
 }
