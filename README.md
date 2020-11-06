@@ -19,6 +19,9 @@ command.
 ## Current work
 
 -   WebSocket Broadcaster
+-   Audio Bridge
+-   Chat persistance
+-   Virtual servers
 
 ## Ideas
 

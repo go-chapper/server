@@ -6,7 +6,10 @@
 package store
 
 import (
+	"fmt"
+
 	"chapper.dev/server/internal/models"
+	"chapper.dev/server/internal/models/joins"
 )
 
 func (s *Store) GetUser(username string) (*models.User, error) {
@@ -26,12 +29,21 @@ func (s *Store) GetUserPublicKey(username string) (string, error) {
 			First(user).Error
 }
 
-func (s *Store) GetUserServers(username string) ([]models.Server, error) {
-	servers := []models.Server{}
-	err := s.Ctx().
-		Model(models.User{Username: username}).
-		Association("Servers").
-		Find(&servers)
+func (s *Store) GetUserServers(username string) ([]joins.UserServers, error) {
+	servers := []joins.UserServers{}
+	err := s.db.Raw(`
+		SELECT 
+			servers.* 
+		FROM 
+			servers 
+		LEFT JOIN (users, user_servers) 
+			ON (
+				user_servers.user_username = users.username AND 
+				user_servers.server_hash = servers.hash
+			) 
+		WHERE users.username = ?`, username).
+		Scan(&servers).Error
+	fmt.Println(servers, username)
 	return servers, err
 }
 

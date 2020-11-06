@@ -7,6 +7,7 @@ package models
 
 type Server struct {
 	Hash        string `json:"hash" gorm:"primaryKey"`
+	URL         string `json:"url"`
 	Name        string `json:"name"`
 	Description string `json:"description"`
 	Image       string `json:"image"`

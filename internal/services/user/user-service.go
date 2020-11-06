@@ -8,6 +8,7 @@ package user
 import (
 	"chapper.dev/server/internal/config"
 	"chapper.dev/server/internal/models"
+	"chapper.dev/server/internal/models/joins"
 	"chapper.dev/server/internal/modules/avatar"
 	"chapper.dev/server/internal/store"
 )
@@ -83,6 +84,10 @@ func (s Service) SaveTempToken(username, token string) error {
 	return s.store.SaveUser(user)
 }
 
-func (s Service) GetUserServers(username string) ([]models.Server, error) {
+func (s Service) GetUserServers(username string) ([]joins.UserServers, error) {
 	return s.store.GetUserServers(username)
+}
+
+func (s Service) PutUserServer(username string) ([]models.Server, error) {
+	return nil, nil
 }
