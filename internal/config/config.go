@@ -30,6 +30,7 @@ type LogOptions struct {
 }
 
 type TurnOptions struct {
+	Domain   string `toml:"DOMAIN"`
 	PublicIP string `toml:"PUBLIC_IP"`
 	Port     int    `toml:"PORT"`
 }

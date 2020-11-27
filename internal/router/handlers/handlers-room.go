@@ -51,7 +51,7 @@ func (h *Handler) CreateRoom(c echo.Context) error {
 		})
 	}
 
-	err = h.roomService.CreateRoom(c.Param("server-hash"), room)
+	err = h.roomService.CreateRoom(room)
 	if err != nil {
 		log.Printf("ERROR [Router] Failed to create room: %v\n", err)
 
@@ -74,7 +74,7 @@ func (h *Handler) CreateRoom(c echo.Context) error {
 
 // GetRoom returns a room identified by it's name
 func (h *Handler) GetRoom(c echo.Context) error {
-	room, err := h.roomService.GetRoom(c.Param("server-hash"), c.Param("room-hash"))
+	room, err := h.roomService.GetRoom(c.Param("room-hash"))
 	if err != nil {
 		log.Printf("ERROR [Router] Failed to get server: %v\n", err)
 
@@ -96,7 +96,7 @@ func (h *Handler) GetRoom(c echo.Context) error {
 
 // GetRooms returns a room identified by it's name
 func (h *Handler) GetRooms(c echo.Context) error {
-	rooms, err := h.roomService.GetRooms(c.Param("server-hash"))
+	rooms, err := h.roomService.GetRooms()
 	if err != nil {
 		log.Printf("ERROR [Router] Failed to get rooms: %v\n", err)
 		return c.JSON(http.StatusInternalServerError, Map{
@@ -124,7 +124,7 @@ func (h *Handler) DeleteRoom(c echo.Context) error {
 		})
 	}
 
-	err := h.roomService.DeleteRoom(c.Param("server-hash"), c.Param("room-hash"))
+	err := h.roomService.DeleteRoom(c.Param("room-hash"))
 	if err != nil {
 		log.Printf("ERROR [Router] Failed to delete room: %v\n", err)
 		return c.JSON(http.StatusInternalServerError, Map{

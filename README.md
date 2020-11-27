@@ -16,18 +16,16 @@ a lot more setup, like creating directories, config files and more...
 To run your Chapper instance use the `./server run --config path/to/your/config.toml`
 command.
 
-## Current work
+## TODOs
 
--   WebSocket Broadcaster
--   Audio Bridge
--   Chat persistance
--   Virtual servers
+-   Finish bridge
+-   Clean up database queries (just SQL)
 
 ## Ideas
 
 -   Add AutoTLS support (ACME Manager) and ask this in the install CLI
 
-## Todos
+## All Todos
 
 ### Authentication
 

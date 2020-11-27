@@ -10,7 +10,7 @@ type Room struct {
 	Name        string `json:"name"`
 	Type        string `json:"type"`
 	Description string `json:"description"`
-	BelongsTo   string `json:"-" gorm:"index"` // Reference
+	// BelongsTo   string `json:"-" gorm:"index"` // Reference
 }
 
 var allowedTypes = []string{"text", "voice"}

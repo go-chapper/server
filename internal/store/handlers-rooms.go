@@ -9,29 +9,29 @@ import (
 	"chapper.dev/server/internal/models"
 )
 
-// CreateRoom creates a new 'room' on server identified by 'serverHash'
-func (s *Store) CreateRoom(serverHash string, room *models.Room) error {
-	return s.Ctx().Model(&models.Server{Hash: serverHash}).Association("Rooms").Append(room)
+// CreateRoom creates a new 'room'
+func (s *Store) CreateRoom(room *models.Room) error {
+	return s.Ctx().Create(room).Error
 }
 
-// GetRoom returns one room of a server identified by 'serverHash'
-func (s *Store) GetRoom(serverHash, roomHash string) (models.Room, error) {
+// GetRoom returns one room indentified by 'roomHash'
+func (s *Store) GetRoom(roomHash string) (models.Room, error) {
 	var room models.Room
-	return room, s.Ctx().Model(&models.Server{Hash: serverHash}).Association("Rooms").Find(&room, "hash = ?", roomHash)
+	return room, s.Ctx().Find(&room, "hash = ?", roomHash).Error
 }
 
-// GetRooms returns all rooms of a server identified by 'serverHash'
-func (s *Store) GetRooms(serverHash string) ([]models.Room, error) {
+// GetRooms returns all rooms
+func (s *Store) GetRooms() ([]models.Room, error) {
 	var rooms []models.Room
-	return rooms, s.Ctx().Model(&models.Server{Hash: serverHash}).Association("Rooms").Find(&rooms)
+	return rooms, s.Ctx().Find(&rooms).Error
 }
 
-// UpdateRoom updates a room of a server identified by 'serverHash'
-func (s *Store) UpdateRoom(serverHash, roomHash string) error {
+// UpdateRoom updates a room identified by 'roomHash'
+func (s *Store) UpdateRoom(roomHash string) error {
 	return nil
 }
 
-// DeleteRoom deletes a room of a server identified by 'serverHash'
-func (s *Store) DeleteRoom(serverHash, roomHash string) error {
-	return s.Ctx().Model(&models.Server{Hash: serverHash}).Association("Rooms").Delete(&models.Room{Hash: roomHash})
+// DeleteRoom deletes a room identified by 'roomHash'
+func (s *Store) DeleteRoom(roomHash string) error {
+	return s.Ctx().Where("hash = ?", roomHash).Delete(&models.Room{}).Error
 }

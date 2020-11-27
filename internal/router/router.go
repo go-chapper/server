@@ -128,19 +128,26 @@ func (r *Router) AddRoutes(handle *handlers.Handler) {
 	profile.GET("/:username", handle.GetProfile)
 
 	// VIRTUAL SERVERS
-	server := v1.Group("/servers")
-	server.DELETE("/:server-hash", handle.DeleteServer)
-	server.POST("/:server-hash", handle.UpdateServer)
-	server.GET("/:server-hash", handle.GetServer)
-	server.PUT("", handle.CreateServer)
-	server.GET("", handle.GetServers)
+	// server := v1.Group("/servers")
+	// server.DELETE("/:server-hash", handle.DeleteServer)
+	// server.POST("/:server-hash", handle.UpdateServer)
+	// server.GET("/:server-hash", handle.GetServer)
+	// server.PUT("", handle.CreateServer)
+	// server.GET("", handle.GetServers)
 
 	// ROOMS
-	server.DELETE("/:server-hash/rooms/:room-hash", handle.DeleteRoom)
-	server.POST("/:server-hash/rooms/:room-hash", handle.UpdateRoom)
-	server.GET("/:server-hash/rooms/:room-hash", handle.GetRoom)
-	server.PUT("/:server-hash/rooms", handle.CreateRoom)
-	server.GET("/:server-hash/rooms", handle.GetRooms)
+	rooms := v1.Group("/rooms")
+	rooms.DELETE("/:room-hash", handle.DeleteRoom)
+	rooms.POST("/:room-hash", handle.UpdateRoom)
+	rooms.GET("/:room-hash", handle.GetRoom)
+	rooms.PUT("", handle.CreateRoom)
+	rooms.GET("", handle.GetRooms)
+
+	// CALLS
+	calls := v1.Group("/calls")
+	calls.POST("/new/:room-hash", handle.NewCall)
+	calls.POST("/sdp/:room-hash", handle.ForwardSDP)
+	calls.POST("/join/:call-hash", handle.JoinCall)
 
 	//// AUTH ////
 	auth := r.echo.Group("/auth")

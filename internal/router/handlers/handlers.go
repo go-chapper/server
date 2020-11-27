@@ -9,6 +9,7 @@ import (
 	"chapper.dev/server/internal/config"
 	"chapper.dev/server/internal/modules/jwt"
 	"chapper.dev/server/internal/services/auth"
+	"chapper.dev/server/internal/services/call"
 	"chapper.dev/server/internal/services/invite"
 	"chapper.dev/server/internal/services/room"
 	"chapper.dev/server/internal/services/server"
@@ -70,6 +71,7 @@ type Handler struct {
 	inviteService invite.Service
 	serverService server.Service
 	roomService   room.Service
+	callService   call.Service
 }
 
 // Map is a wrapper for an map[string]interface{}, which gets used in JSON responses
@@ -83,6 +85,7 @@ func New(store *store.Store, config *config.Config) *Handler {
 	ss := server.NewService(store)
 	rs := room.NewService(store)
 	as := auth.NewService()
+	cs := call.NewService(config.Turn)
 
 	signalingHub := broadcast.NewSignalingHub()
 	messagingHub := broadcast.NewMessagingHub()
@@ -96,6 +99,7 @@ func New(store *store.Store, config *config.Config) *Handler {
 		inviteService: is,
 		serverService: ss,
 		roomService:   rs,
+		callService:   cs,
 	}
 }
 

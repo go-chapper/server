@@ -11,7 +11,7 @@ type Server struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
 	Image       string `json:"image"`
-	Rooms       []Room `json:"rooms,omitepmty" gorm:"foreignKey:BelongsTo"`
+	// Rooms       []Room `json:"rooms,omitepmty" gorm:"foreignKey:BelongsTo"`
 }
 
 func (s *Server) IsEmpty() bool {
