@@ -76,3 +76,7 @@ func (b *Bridge) RemoveRoom(roomHash string) error {
 	delete(b.rooms, roomHash)
 	return nil
 }
+
+func (b *Bridge) Upgrade() {
+
+}

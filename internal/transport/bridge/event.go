@@ -14,3 +14,13 @@ type Event struct {
 	Candidate *webrtc.ICECandidateInit   `json:"candidate,omitempty"`
 	User      *PublicUser                `json:"user,omitempty"`
 }
+
+const (
+	EventOffer     string = "offer"
+	EventAnswer    string = "answer"
+	EventCandidate string = "candidate"
+	EventMute      string = "mute"
+	EventUnmute    string = "unmute"
+	EventJoin      string = "user-join"
+	EventLeave     string = "user-leave"
+)

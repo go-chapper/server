@@ -102,12 +102,24 @@ func (r *Room) BroadcastEvent(event Event, user *User) error {
 
 // BroadcastEventJoin creates a join event and broadcasts it
 func (r *Room) BroadcastEventJoin(user *User) error {
-	event := Event{Type: "user-join", User: user.ToPublic()}
+	event := Event{Type: EventJoin, User: user.ToPublic()}
 	return r.BroadcastEvent(event, user)
 }
 
 // BroadcastEventLeave creates a leave event and broadcasts it
 func (r *Room) BroadcastEventLeave(user *User) error {
-	event := Event{Type: "user-leave", User: user.ToPublic()}
+	event := Event{Type: EventLeave, User: user.ToPublic()}
+	return r.BroadcastEvent(event, user)
+}
+
+// BroadcastEventMute creates microphone mute event and broadcasts it
+func (r *Room) BroadcastEventMute(user *User) error {
+	event := Event{Type: EventMute, User: user.ToPublic()}
+	return r.BroadcastEvent(event, user)
+}
+
+// BroadcastEventUnmute creates microphone unmute event and broadcasts it
+func (r *Room) BroadcastEventUnmute(user *User) error {
+	event := Event{Type: EventUnmute, User: user.ToPublic()}
 	return r.BroadcastEvent(event, user)
 }
