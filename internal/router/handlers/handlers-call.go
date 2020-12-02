@@ -6,8 +6,6 @@ package handlers
 
 import (
 	"fmt"
-	"io/ioutil"
-	"log"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -19,13 +17,13 @@ func (h *Handler) NewCall(c echo.Context) error {
 
 	fmt.Println("Hey there")
 
-	err := h.callService.NewCall(c.Param("room-hash"))
-	if err != nil {
-		log.Printf("ERROR [Router] Failed to start new call: %v\n", err)
-		return c.JSON(http.StatusInternalServerError, Map{
-			"errror": ErrInternal,
-		})
-	}
+	// err := h.callService.NewCall(c.Param("room-hash"))
+	// if err != nil {
+	// 	log.Printf("ERROR [Router] Failed to start new call: %v\n", err)
+	// 	return c.JSON(http.StatusInternalServerError, Map{
+	// 		"errror": ErrInternal,
+	// 	})
+	// }
 
 	return c.JSON(http.StatusOK, Map{
 		"status": "call-created",
@@ -37,21 +35,21 @@ func (h *Handler) JoinCall(c echo.Context) error {
 }
 
 func (h *Handler) ForwardSDP(c echo.Context) error {
-	sdp, err := ioutil.ReadAll(c.Request().Body)
-	if err != nil {
-		log.Printf("ERROR [Router] Failed read sdp: %v\n", err)
-		return c.JSON(http.StatusInternalServerError, Map{
-			"errror": ErrInternal,
-		})
-	}
+	// sdp, err := ioutil.ReadAll(c.Request().Body)
+	// if err != nil {
+	// 	log.Printf("ERROR [Router] Failed read sdp: %v\n", err)
+	// 	return c.JSON(http.StatusInternalServerError, Map{
+	// 		"errror": ErrInternal,
+	// 	})
+	// }
 
-	err = h.callService.ForwardSDP(c.Param("room-hash"), string(sdp))
-	if err != nil {
-		log.Printf("ERROR [Router] Failed forward sdp: %v\n", err)
-		return c.JSON(http.StatusInternalServerError, Map{
-			"errror": ErrInternal,
-		})
-	}
+	// err = h.callService.ForwardSDP(c.Param("room-hash"), string(sdp))
+	// if err != nil {
+	// 	log.Printf("ERROR [Router] Failed forward sdp: %v\n", err)
+	// 	return c.JSON(http.StatusInternalServerError, Map{
+	// 		"errror": ErrInternal,
+	// 	})
+	// }
 
 	return nil
 }

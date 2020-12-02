@@ -4,7 +4,7 @@
 
 package bridge
 
-import "github.com/pion/webrtc/v3"
+import "github.com/pion/webrtc/v2"
 
 type Event struct {
 	Type string `json:"string"`

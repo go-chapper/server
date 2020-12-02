@@ -9,6 +9,8 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/pkg/profile"
+
 	"chapper.dev/server/internal/config"
 	"chapper.dev/server/internal/constants"
 	"chapper.dev/server/internal/logger"
@@ -28,6 +30,8 @@ var runCmd = &cobra.Command{
 	Short: "Run runs the Chapper server instance",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
+		defer profile.Start(profile.ProfilePath(".")).Stop()
+
 		fmt.Printf(constants.Banner, Version, constants.Website)
 
 		c := config.New()

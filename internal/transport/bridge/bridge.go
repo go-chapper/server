@@ -5,7 +5,13 @@
 // Package bridge provides utilities to create, keep track of and delete WebRTC calls
 package bridge
 
-import "errors"
+import (
+	"errors"
+	"net/http"
+
+	"github.com/gorilla/websocket"
+	"github.com/pion/webrtc/v2"
+)
 
 var (
 	// ErrNoSuchRoom indicates no such room with given key exists in the pool of active
@@ -15,6 +21,18 @@ var (
 	// ErrDuplicateRoom indicates the room with given key already exists
 	ErrDuplicateRoom = errors.New("Duplicate room")
 )
+
+var wsUpgrader = websocket.Upgrader{
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
+	CheckOrigin: func(r *http.Request) bool {
+		return true
+	},
+}
+
+var connectionConfig = webrtc.Configuration{
+	SDPSemantics: webrtc.SDPSemanticsUnifiedPlanWithFallback,
+}
 
 // Bridge keeps track of active rooms
 type Bridge struct {
@@ -77,6 +95,30 @@ func (b *Bridge) RemoveRoom(roomHash string) error {
 	return nil
 }
 
-func (b *Bridge) Upgrade() {
+func (b *Bridge) Connect(username, roomHash string, w http.ResponseWriter, r *http.Request) {
+	conn, err := wsUpgrader.Upgrade(w, r, nil)
+	if err != nil {
+		return
+	}
 
+	// Setup WebRTC session
+	mediaEngine := webrtc.MediaEngine{}
+	mediaEngine.RegisterCodec(webrtc.NewRTPOpusCodec(webrtc.DefaultPayloadTypeOpus, 48000))
+
+	api := webrtc.NewAPI(webrtc.WithMediaEngine(mediaEngine))
+	pc, err := api.NewPeerConnection(connectionConfig)
+	if err != nil {
+		return
+	}
+
+	room, err := b.GetOrCreateRoom(roomHash)
+	if err != nil {
+		return
+	}
+
+	user := NewUser(username, conn, pc, room)
+	user.AddListeners()
+
+	go user.startRead()
+	go user.startWrite()
 }

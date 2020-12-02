@@ -7,15 +7,15 @@ package bridge
 import (
 	"encoding/json"
 	"errors"
+	"io"
 	"log"
-	"net/http"
 	"sync"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 	"github.com/pion/rtp"
-	"github.com/pion/webrtc/v3"
+	"github.com/pion/webrtc/v2"
 )
 
 const (
@@ -30,28 +30,23 @@ const (
 )
 
 var (
-	ErrNoSuchEvent = errors.New("No such event")
+	ErrNoSuchEvent   = errors.New("no such event")
+	ErrChanClosed    = errors.New("channel closed")
+	ErrInvalidTrack  = errors.New("track is nil")
+	ErrInvalidPacket = errors.New("packet is nil")
 )
-
-var wsUpgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
-	CheckOrigin: func(r *http.Request) bool {
-		return true
-	},
-}
 
 // User keeps track of a websocket connection for signaling, a WebRTC peer connection and
 // connects hub, room and user
 type User struct {
-	ID            string                         // A unique ID of the user
-	room          *Room                          // The room the user is in
-	conn          *websocket.Conn                // The underlying websocket connection to exchange data (signaling)
-	send          chan []byte                    // Channel for outbound messages
-	pc            *webrtc.PeerConnection         // WebRTC peer connection
-	inTracks      map[uint32]*webrtc.TrackRemote // Incoming tracks (microphone)
-	inTracksLock  sync.RWMutex                   // Incoming tracks lock
-	outTracks     map[uint32]*webrtc.TrackRemote // Rest of the room's tracks
+	ID            string                   // A unique ID of the user
+	room          *Room                    // The room the user is in
+	conn          *websocket.Conn          // The underlying websocket connection to exchange data (signaling)
+	send          chan []byte              // Channel for outbound messages
+	pc            *webrtc.PeerConnection   // WebRTC peer connection
+	inTracks      map[uint32]*webrtc.Track // Incoming tracks (microphone)
+	inTracksLock  sync.RWMutex             // Incoming tracks lock
+	outTracks     map[uint32]*webrtc.Track // Rest of the room's tracks
 	outTracksLock sync.RWMutex
 
 	rtpCh chan *rtp.Packet
@@ -72,10 +67,21 @@ type UserInfo struct {
 	Mute     bool   `josn:"mute"`
 }
 
-func NewUser(room *Room) *User {
+// NewUser creates and returns a new user
+func NewUser(username string, conn *websocket.Conn, pc *webrtc.PeerConnection, room *Room) *User {
 	return &User{
-		ID:   uuid.New().String(),
-		room: room,
+		ID:        uuid.New().String(),
+		room:      room,
+		conn:      conn,
+		send:      make(chan []byte, 256),
+		pc:        pc,
+		inTracks:  make(map[uint32]*webrtc.Track),
+		outTracks: make(map[uint32]*webrtc.Track),
+		rtpCh:     make(chan *rtp.Packet, 100),
+		info: UserInfo{
+			Username: username,
+			Mute:     false,
+		},
 	}
 }
 
@@ -85,6 +91,20 @@ func (u *User) ToPublic() *PublicUser {
 		ID:       u.ID,
 		UserInfo: u.info,
 	}
+}
+
+func (u *User) AddListeners() error {
+	u.pc.OnICECandidate(func(iceCandidate *webrtc.ICECandidate) {
+		if iceCandidate != nil {
+			err := u.sendCandidate(iceCandidate)
+			if err != nil {
+				// Log
+				return
+			}
+		}
+	})
+
+	return nil
 }
 
 // startRead starts continuously reading from the user's websocket
@@ -205,7 +225,7 @@ func (u *User) handleEvent(event Event) error {
 func (u *User) handleOffer(offer webrtc.SessionDescription) error {
 	// Add receive only transciever. This is the users microphone
 	if len(u.pc.GetTransceivers()) == 0 {
-		_, err := u.pc.AddTransceiverFromKind(webrtc.RTPCodecTypeAudio, webrtc.RTPTransceiverInit{
+		_, err := u.pc.AddTransceiverFromKind(webrtc.RTPCodecTypeAudio, webrtc.RtpTransceiverInit{
 			Direction: webrtc.RTPTransceiverDirectionRecvonly,
 		})
 		if err != nil {
@@ -220,6 +240,19 @@ func (u *User) handleOffer(offer webrtc.SessionDescription) error {
 	}
 
 	return u.sendAnswer()
+}
+
+// sendCandidate sends ice candidate to peer
+func (u *User) sendCandidate(iceCandidate *webrtc.ICECandidate) error {
+	if iceCandidate == nil {
+		return errors.New("nil ice candidate")
+	}
+	iceCandidateInit := iceCandidate.ToJSON()
+	err := u.sendEvent(Event{Type: "candidate", Candidate: &iceCandidateInit})
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // answer creates a session description answer
@@ -245,4 +278,71 @@ func (u *User) sendAnswer() error {
 		return err
 	}
 	return u.sendEvent(Event{Type: "answer", Answer: &answer})
+}
+
+// receiveInTrackRTP receive all incoming tracks' rtp and sent to one channel
+func (u *User) receiveInTrackRTP(remoteTrack *webrtc.Track) {
+	for {
+		if u.stop {
+			return
+		}
+		rtp, err := remoteTrack.ReadRTP()
+		if err != nil {
+			if err == io.EOF {
+				return
+			}
+			log.Fatalf("rtp err => %v", err)
+		}
+		u.rtpCh <- rtp
+	}
+}
+
+// ReadRTP reads rtp packets
+func (u *User) ReadRTP() (*rtp.Packet, error) {
+	rtp, ok := <-u.rtpCh
+	if !ok {
+		return nil, ErrChanClosed
+	}
+	return rtp, nil
+}
+
+// WriteRTP sends rtp packets to user's outgoing tracks
+func (u *User) WriteRTP(pkt *rtp.Packet) error {
+	if pkt == nil {
+		return ErrInvalidPacket
+	}
+	u.outTracksLock.RLock()
+	track := u.outTracks[pkt.SSRC]
+	u.outTracksLock.RUnlock()
+
+	if track == nil {
+		log.Printf("WebRTCTransport.WriteRTP track==nil pkt.SSRC=%d", pkt.SSRC)
+		return ErrInvalidTrack
+	}
+
+	// log.Debugf("WebRTCTransport.WriteRTP pkt=%v", pkt)
+	err := track.WriteRTP(pkt)
+	if err != nil {
+		// log.Errorf(err.Error())
+		// u.writeErrCnt++
+		return err
+	}
+	return nil
+}
+
+// AddTrack adds track to peer connection
+func (u *User) AddTrack(ssrc uint32) error {
+	track, err := u.pc.NewTrack(webrtc.DefaultPayloadTypeOpus, ssrc, string(ssrc), string(ssrc))
+	if err != nil {
+		return err
+	}
+	if _, err := u.pc.AddTrack(track); err != nil {
+		log.Println("ERROR Add remote track as peerConnection local track", err)
+		return err
+	}
+
+	u.outTracksLock.Lock()
+	u.outTracks[track.SSRC()] = track
+	u.outTracksLock.Unlock()
+	return nil
 }
