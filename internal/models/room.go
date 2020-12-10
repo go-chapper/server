@@ -6,11 +6,10 @@
 package models
 
 type Room struct {
-	Hash        string `json:"hash" gorm:"primaryKey"`
-	Name        string `json:"name"`
-	Type        string `json:"type"`
-	Description string `json:"description"`
-	// BelongsTo   string `json:"-" gorm:"index"` // Reference
+	Hash        string `json:"hash" db:"hash"`
+	Name        string `json:"name" db:"name"`
+	Type        string `json:"type" db:"type"`
+	Description string `json:"description" db:"description"`
 }
 
 var allowedTypes = []string{"text", "voice"}

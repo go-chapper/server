@@ -6,12 +6,10 @@
 package models
 
 type Server struct {
-	Hash        string `json:"hash" gorm:"primaryKey"`
-	URL         string `json:"url"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	Image       string `json:"image"`
-	// Rooms       []Room `json:"rooms,omitepmty" gorm:"foreignKey:BelongsTo"`
+	Hash        string `json:"hash" db:"hash"`
+	Name        string `json:"name" db:"name"`
+	Description string `json:"description" db:"description"`
+	Image       string `json:"image" db:"image"`
 }
 
 func (s *Server) IsEmpty() bool {

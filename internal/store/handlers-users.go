@@ -6,51 +6,61 @@
 package store
 
 import (
-	"fmt"
-
 	"chapper.dev/server/internal/models"
 	"chapper.dev/server/internal/models/joins"
 )
 
-func (s *Store) GetUser(username string) (*models.User, error) {
-	user := new(models.User)
-	return user, s.Ctx().
-		Preload("Role.Privileges").
-		Where("username = ?", username).
-		First(user).Error
+func (s *Store) GetUser(username string) (models.User, error) {
+	var user models.User
+	// TODO <2020/10/12>: Join permissions
+	err := s.conn.Get(&user,
+		`SELECT username, password, email
+		FROM users
+		WHERE username = ?`,
+		username,
+	)
+	return user, err
 }
 
 func (s *Store) GetUserPublicKey(username string) (string, error) {
-	user := new(models.User)
-	return user.PublicKey,
-		s.Ctx().
-			Where("username = ?", username).
-			Select("public_key").
-			First(user).Error
+	var publicKey string
+	err := s.conn.Get(&publicKey,
+		`SELECT publickey
+		FROM users
+		WHERE username = ?`,
+		username,
+	)
+	return publicKey, err
 }
 
 func (s *Store) GetUserServers(username string) ([]joins.UserServers, error) {
 	servers := []joins.UserServers{}
-	err := s.db.Raw(`
-		SELECT 
-			servers.* 
-		FROM 
-			servers 
-		LEFT JOIN (users, user_servers) 
-			ON (
-				user_servers.user_username = users.username AND 
-				user_servers.server_hash = servers.hash
-			) 
-		WHERE users.username = ?`, username).
-		Scan(&servers).Error
-	fmt.Println(servers, username)
-	return servers, err
+	// TODO <2020/10/12>: re-implement
+	return servers, nil
 }
 
-func (s *Store) CreateUser(user *models.User) error {
-	return s.Ctx().Create(user).Error
+func (s *Store) CreateUser(user *models.SignupUser) error {
+	_, err := s.conn.Exec(`
+		INSERT INTO users
+		(username, password, email, publickey)
+		VALUES (?, ?, ?, ?)`,
+		user.Username,
+		user.Password,
+		user.Email,
+		user.PublicKey,
+	)
+	return err
 }
 
-func (s *Store) SaveUser(user *models.User) error {
-	return s.Ctx().Save(user).Error
+func (s *Store) UpdateUser(username string, user *models.User) error {
+	_, err := s.conn.Exec(`
+		UPDATE users
+		SET password = ?, email = ?, avatar = ?
+		WHERE username = ?`,
+		user.Password,
+		user.Email,
+		user.Avatar,
+		username,
+	)
+	return err
 }

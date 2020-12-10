@@ -6,31 +6,31 @@
 package store
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"strings"
 
 	"chapper.dev/server/internal/config"
 	"chapper.dev/server/internal/constants"
-	"chapper.dev/server/internal/models"
 
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
+	_ "github.com/go-sql-driver/mysql" // MySQL driver
+	"github.com/jmoiron/sqlx"
 )
 
-// Store wraps a GORM database connection
+// Store wraps a sqlx database connection
 type Store struct {
-	db       *gorm.DB
+	conn     *sqlx.DB
 	settings *Settings
 }
 
 var (
+	// ErrInvalidDatabaseType indicates the provided database type is not supported
 	ErrInvalidDatabaseType = errors.New("Invalid database type")
 )
 
+// Settings holds settings data
 type Settings struct {
-	ID               uint `gorm:"primaryKey"`
+	ID               uint
 	IsInstalled      bool
 	SuperadminExists bool
 }
@@ -41,48 +41,40 @@ var DefaultSettings = &Settings{
 	SuperadminExists: false,
 }
 
-// New returns a new MySQL DB instance
-func New(t string, s config.StoreOptions) (*Store, error) {
+// New returns a new store instance
+func New(t string, options config.StoreOptions) (*Store, error) {
 	switch strings.ToLower(t) {
 	case "mysql":
-		db, err := gorm.Open(mysql.Open(MySQLDSN(s)), &gorm.Config{})
+		conn, err := sqlx.Open("mysql", DSN(options))
 		if err != nil {
 			return nil, err
 		}
-		db = db.Set("gorm:table_options", constants.StoreTableOptions)
 
 		return &Store{
-			db: db,
+			conn: conn,
 		}, nil
 	default:
 		return nil, ErrInvalidDatabaseType
 	}
 }
 
-// MySQLDSN returns a data source name for a MySQL database connection, refer
+// DSN returns a data source name for a database connection, refer
 // https://github.com/go-sql-driver/mysql#dsn-data-source-name
-func MySQLDSN(s config.StoreOptions) string {
+func DSN(options config.StoreOptions) string {
 	return fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?%s",
-		s.User,
-		s.Password,
-		s.Host,
-		s.Port,
-		s.Database,
+		options.User,
+		options.Password,
+		options.Host,
+		options.Port,
+		options.Database,
 		constants.StoreParams,
 	)
 }
 
-// Migrate migrates the neccesary tables
+// Migrate migrates the neccesary database tables
 func (s *Store) Migrate() error {
-	return s.db.AutoMigrate(
-		&models.Invite{},
-		&models.Server{},
-		&models.Room{},
-		&models.User{},
-		&models.Role{},
-		&models.Privileges{},
-		&Settings{},
-	)
+	// TODO <2020/10/12>: Re-implement
+	return nil
 }
 
 // GetSettings returns the settings or creates a new default entry in the database
@@ -90,34 +82,12 @@ func (s *Store) GetSettings() (*Settings, error) {
 	if s.settings != nil {
 		return s.settings, nil
 	}
-
-	// TODO <2020/12/09>: Clean this mess up
-	settings := new(Settings)
-	err := s.Ctx().First(settings).Error
-	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			err := s.Ctx().Create(DefaultSettings).Error
-			if err != nil {
-				return nil, err
-			}
-			s.settings = DefaultSettings
-			return DefaultSettings, nil
-		}
-		return nil, err
-	}
-
-	s.settings = settings
-	return settings, nil
+	// TODO <2020/10/12>: Re-implement this
+	return nil, nil
 }
 
 // SetSettings sets settings and saves them
-func (s *Store) SetSettings(settings *Settings) error {
-	s.settings = settings
-	return s.Ctx().Model(settings).Updates(settings).Error
-}
-
-// Ctx returns the db instance with a new context to create a new statement
-func (s *Store) Ctx() *gorm.DB {
-	// NOTE(Techassi): Apparently this is part of 'optimizations' in the new GORM version
-	return s.db.WithContext(context.Background())
-}
+// func (s *Store) SetSettings(settings *Settings) error {
+// 	s.settings = settings
+// 	return s.Ctx().Model(settings).Updates(settings).Error
+// }

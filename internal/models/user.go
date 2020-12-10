@@ -11,17 +11,17 @@ import (
 )
 
 type User struct {
-	Username       string    `json:"username" gorm:"primaryKey"`
-	Password       string    `json:"password"`
-	Email          string    `json:"email"`
-	EmailVerified  bool      `json:"emailVerified"`
-	Avatar         string    `json:"avatar"`
-	PublicKey      string    `json:"-"`
-	TwoFASecret    string    `json:"-"`
-	TwoFATempToken string    `json:"-"`
-	Role           []Role    `gorm:"many2many:user_roles;"`
-	Friends        []*User   `json:"-" gorm:"many2many:user_friends"`
-	Servers        []*Server `json:"-" gorm:"many2many:user_servers"`
+	Username      string `json:"username" db:"username"`
+	Password      string `json:"-" db:"password"`
+	Email         string `json:"email" db:"email"`
+	EmailVerified bool   `json:"email_verified" db:"email_verified"`
+	Avatar        string `json:"avatar" db:"avatar"`
+	PublicKey     string `json:"-" db:"publickey"`
+	TwoFASecret   string `json:"-" db:"twofa_secret"`
+	TwoFAVerify   string `json:"-" db:"twofa_verify"`
+	// Role           []Role
+	// Friends        []*User
+	// Servers        []*Server
 }
 
 type SignupUser struct {
@@ -33,15 +33,15 @@ type SignupUser struct {
 
 // Role specifies a role which is used for rights management
 type Role struct {
-	ID          uint       `json:"-" gorm:"primaryKey"`
+	ID          uint       `json:"-"`
 	Name        string     `json:"name"`
 	Description string     `json:"description"`
-	Privileges  Privileges `json:"privileges" gorm:"foreignKey:RoleID;references:id"`
+	Privileges  Privileges `json:"privileges"`
 }
 
 // Privileges manages privileges which each role has
 type Privileges struct {
-	ID                    uint `json:"-" gorm:"primaryKey"`
+	ID                    uint `json:"-"`
 	RoleID                uint `json:"-"`
 	CanCreateServer       bool `json:"canCreateServer"`
 	CanDeleteServer       bool `json:"canDeleteServer"`

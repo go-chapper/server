@@ -13,7 +13,6 @@ import (
 	"chapper.dev/server/internal/models"
 
 	"github.com/labstack/echo/v4"
-	"gorm.io/gorm"
 )
 
 // CreateRoom creates a room
@@ -77,13 +76,6 @@ func (h *Handler) GetRoom(c echo.Context) error {
 	room, err := h.roomService.GetRoom(c.Param("room-hash"))
 	if err != nil {
 		log.Printf("ERROR [Router] Failed to get server: %v\n", err)
-
-		if err == gorm.ErrRecordNotFound {
-			return c.JSON(http.StatusNotFound, Map{
-				"error": ErrRoomNotFound,
-			})
-		}
-
 		return c.JSON(http.StatusInternalServerError, Map{
 			"errror": ErrInternal,
 		})

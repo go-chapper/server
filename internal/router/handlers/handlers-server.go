@@ -13,7 +13,6 @@ import (
 	"chapper.dev/server/internal/models"
 
 	"github.com/labstack/echo/v4"
-	"gorm.io/gorm"
 )
 
 // CreateServer creates a server
@@ -68,13 +67,6 @@ func (h *Handler) GetServer(c echo.Context) error {
 	server, err := h.serverService.GetServer(c.Param("server-hash"))
 	if err != nil {
 		log.Printf("ERROR [Router] Failed to get server: %v\n", err)
-
-		if err == gorm.ErrRecordNotFound {
-			return c.JSON(http.StatusNotFound, Map{
-				"error": ErrServerNotFound,
-			})
-		}
-
 		return c.JSON(http.StatusInternalServerError, Map{
 			"error": ErrInternal,
 		})

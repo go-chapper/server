@@ -9,29 +9,59 @@ import (
 	"chapper.dev/server/internal/models"
 )
 
-// CreateRoom creates a new 'room'
+// CreateRoom inserts a new room entry into the database
 func (s *Store) CreateRoom(room *models.Room) error {
-	return s.Ctx().Create(room).Error
+	_, err := s.conn.Exec(`
+		INSERT INTO rooms
+		(hash, name, type, description)
+		VALUES (?, ?, ?, ?)`,
+		room.Hash,
+		room.Name,
+		room.Type,
+		room.Description,
+	)
+	return err
 }
 
-// GetRoom returns one room indentified by 'roomHash'
+// GetRoom selects ONE room entry with provided 'roomHash' from the database
 func (s *Store) GetRoom(roomHash string) (models.Room, error) {
 	var room models.Room
-	return room, s.Ctx().Find(&room, "hash = ?", roomHash).Error
+	err := s.conn.Get(&room,
+		`SELECT hash, name, type, description 
+		FROM rooms 
+		WHERE hash = ?`,
+		roomHash,
+	)
+	return room, err
 }
 
-// GetRooms returns all rooms
+// GetRooms selects multiple room entries from the database
 func (s *Store) GetRooms() ([]models.Room, error) {
 	var rooms []models.Room
-	return rooms, s.Ctx().Find(&rooms).Error
+	err := s.conn.Select(&rooms, `SELECT hash, name, type, description FROM rooms`)
+	return rooms, err
 }
 
-// UpdateRoom updates a room identified by 'roomHash'
-func (s *Store) UpdateRoom(roomHash string) error {
-	return nil
+// UpdateRoom updates ONE room entry with provided 'roomHash' in the database
+func (s *Store) UpdateRoom(roomHash string, new *models.Room) error {
+	_, err := s.conn.Exec(`
+		UPDATE rooms
+		SET name = ?, type = ?, description = ?
+		WHERE hash = ?`,
+		new.Name,
+		new.Type,
+		new.Description,
+		roomHash,
+	)
+	return err
 }
 
-// DeleteRoom deletes a room identified by 'roomHash'
+// DeleteRoom deletes ONE room entry with provided 'roomHash' from the database
 func (s *Store) DeleteRoom(roomHash string) error {
-	return s.Ctx().Where("hash = ?", roomHash).Delete(&models.Room{}).Error
+	_, err := s.conn.Exec(`
+		DELETE FROM rooms
+		WHERE hash = ?`,
+		roomHash,
+	)
+	return err
 }

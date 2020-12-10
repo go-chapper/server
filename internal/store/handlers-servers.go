@@ -9,24 +9,59 @@ import (
 	"chapper.dev/server/internal/models"
 )
 
+// CreateServer inserts a new server entry into the database
 func (s *Store) CreateServer(server *models.Server) error {
-	return s.Ctx().Create(server).Error
+	_, err := s.conn.Exec(`
+		INSERT INTO servers
+		(hash, name, description, image)
+		VALUES (?, ?, ?, ?)`,
+		server.Hash,
+		server.Name,
+		server.Description,
+		server.Image,
+	)
+	return err
 }
 
-func (s *Store) GetServer(hash string) (models.Server, error) {
+// GetServer selects ONE server entry with provided 'serverHash' from the database
+func (s *Store) GetServer(serverHash string) (models.Server, error) {
 	var server models.Server
-	return server, s.Ctx().Preload("Rooms").Where("hash = ?", hash).First(&server).Error
+	err := s.conn.Get(&server,
+		`SELECT hash, name, description, image
+		FROM servers
+		WHERE hash = ?`,
+		serverHash,
+	)
+	return server, err
 }
 
+// GetServers selects multiple server entries from the database
 func (s *Store) GetServers() ([]models.Server, error) {
 	var servers []models.Server
-	return servers, s.Ctx().Find(&servers).Error
+	err := s.conn.Select(&servers, `SELECT hash, name, description, imageFROM servers`)
+	return servers, err
 }
 
-func (s *Store) UpdateServer() error {
-	return nil
+// UpdateServer updates ONE server entry with provided 'serverHash' in the database
+func (s *Store) UpdateServer(serverHash string, new *models.Server) error {
+	_, err := s.conn.Exec(`
+		UPDATE servers
+		SET name = ?, description = ?, image = ?
+		WHERE hash = ?`,
+		new.Name,
+		new.Description,
+		new.Image,
+		serverHash,
+	)
+	return err
 }
 
-func (s *Store) DeleteServer(hash string) error {
-	return s.Ctx().Where("hash = ?", hash).Delete(&models.Server{}).Error
+// DeleteServer deletes ONE server entry with provided 'serverHash' from the database
+func (s *Store) DeleteServer(serverHash string) error {
+	_, err := s.conn.Exec(`
+		DELETE FROM servers
+		WHERE hash = ?`,
+		serverHash,
+	)
+	return err
 }

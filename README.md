@@ -20,6 +20,7 @@ command.
 
 -   Finish bridge
 -   Clean up database queries (just SQL)
+-   Use null package
 
 ## Ideas
 
