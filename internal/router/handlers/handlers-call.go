@@ -6,7 +6,6 @@ package handlers
 
 import (
 	"log"
-	"net/http"
 
 	"github.com/labstack/echo/v4"
 )
@@ -19,14 +18,10 @@ func (h *Handler) NewCall(c echo.Context) error {
 	err := h.callService.NewCall(claims.Username, roomHash, c.Response().Writer, c.Request())
 	if err != nil {
 		log.Printf("ERROR [Router] Unable to create new call: %v\n", err)
-		return c.JSON(http.StatusBadRequest, Map{
-			"error": ErrInternal,
-		})
+		return err
 	}
 
-	return c.JSON(http.StatusOK, Map{
-		"status": "call-created",
-	})
+	return nil
 }
 
 func (h *Handler) JoinCall(c echo.Context) error {
@@ -36,14 +31,10 @@ func (h *Handler) JoinCall(c echo.Context) error {
 	err := h.callService.NewCall("Test", roomHash, c.Response().Writer, c.Request())
 	if err != nil {
 		log.Printf("ERROR [Router] Unable to create or join call: %v\n", err)
-		return c.JSON(http.StatusBadRequest, Map{
-			"error": ErrInternal,
-		})
+		return err
 	}
 
-	return c.JSON(http.StatusOK, Map{
-		"status": "call-created",
-	})
+	return nil
 }
 
 func (h *Handler) ForwardSDP(c echo.Context) error {

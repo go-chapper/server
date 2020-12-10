@@ -265,7 +265,7 @@ func (u *User) startWrite() {
 
 // SendEventUser sends user to client to identify himself
 func (u *User) SendEventUser() error {
-	return u.sendEvent(Event{Type: "user", User: u.ToPublic()})
+	return u.sendEvent(Event{Type: TypeUser, User: u.ToPublic()})
 }
 
 // SendEventRoom sends room to client with users except me
@@ -286,28 +286,28 @@ func (u *User) sendEvent(event Event) error {
 // handleEvent handles the different signaling / WebRTC events
 func (u *User) handleEvent(event Event) error {
 	switch event.Type {
-	case EventOffer:
+	case TypeOffer:
 		if event.Offer == nil {
 			// Handle error
 		}
 
 		return u.handleOffer(*event.Offer)
-	case EventAnswer:
+	case TypeAnswer:
 		if event.Answer == nil {
 			// Handle error
 		}
 
 		return u.pc.SetRemoteDescription(*event.Answer)
-	case EventCandidate:
+	case TypeCandidate:
 		if event.Candidate == nil {
 			// Handle error
 		}
 
 		return u.pc.AddICECandidate(*event.Candidate)
-	case EventMute:
+	case TypeMute:
 		u.info.Mute = true
 		return u.room.BroadcastEventMute(u)
-	case EventUnmute:
+	case TypeUnmute:
 		u.info.Mute = false
 		return u.room.BroadcastEventUnmute(u)
 	default:
@@ -342,7 +342,7 @@ func (u *User) sendCandidate(iceCandidate *webrtc.ICECandidate) error {
 		return errors.New("nil ice candidate")
 	}
 	iceCandidateInit := iceCandidate.ToJSON()
-	err := u.sendEvent(Event{Type: "candidate", Candidate: &iceCandidateInit})
+	err := u.sendEvent(Event{Type: TypeCandidate, Candidate: &iceCandidateInit})
 	if err != nil {
 		return err
 	}
@@ -371,7 +371,7 @@ func (u *User) sendAnswer() error {
 	if err != nil {
 		return err
 	}
-	return u.sendEvent(Event{Type: "answer", Answer: &answer})
+	return u.sendEvent(Event{Type: TypeAnswer, Answer: &answer})
 }
 
 // Offer return a offer
@@ -390,7 +390,7 @@ func (u *User) Offer() (webrtc.SessionDescription, error) {
 // SendOffer creates webrtc offer
 func (u *User) SendOffer() error {
 	offer, err := u.Offer()
-	err = u.sendEvent(Event{Type: "offer", Offer: &offer})
+	err = u.sendEvent(Event{Type: TypeOffer, Offer: &offer})
 	if err != nil {
 		panic(err)
 	}
