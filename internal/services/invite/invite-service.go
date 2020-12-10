@@ -6,14 +6,17 @@
 package invite
 
 import (
-	"fmt"
-	"net/url"
+	"errors"
 	"time"
 
 	"chapper.dev/server/internal/config"
 	"chapper.dev/server/internal/models"
 	"chapper.dev/server/internal/modules/hash"
 	"chapper.dev/server/internal/store"
+)
+
+var (
+	ErrMissingData = errors.New("invite-missing-data")
 )
 
 // Service wrapps all dependencies of the invite service
@@ -32,29 +35,24 @@ func NewService(store *store.Store, config config.Config) Service {
 
 // CreateInvite creates a new invite link
 func (s Service) CreateInvite(createdBy string, newInvite *models.CreateInvite) (*models.Invite, error) {
+	if newInvite.IsEmpty() {
+		return nil, ErrMissingData
+	}
+
 	var (
 		currentTime = time.Now()
 		hash        = hash.Adler32(newInvite.Server + currentTime.String())
 	)
 
-	// TODO <2020/07/09>: Dont hardcode http
-	url, err := url.Parse(fmt.Sprintf("http://%s/i/%s", s.config.Router.Domain, hash))
-	if err != nil {
-		return nil, err
-	}
-
 	invite := &models.Invite{
 		CreatedBy:  createdBy,
 		Hash:       hash,
-		Host:       newInvite.Host,
 		Server:     newInvite.Server,
-		URL:        url,
-		URLString:  url.String(),
 		OneTimeUse: newInvite.OneTimeUse,
 		ExpiresAt:  newInvite.ExpiresAt,
 	}
 
-	err = s.store.CreateInvite(invite)
+	err := s.store.CreateInvite(invite)
 	if err != nil {
 		return nil, err
 	}

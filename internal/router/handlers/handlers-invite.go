@@ -37,13 +37,6 @@ func (h *Handler) CreateInvite(c echo.Context) error {
 		})
 	}
 
-	if newInvite.IsEmpty() {
-		log.Println("WARNING [Router] Missing/empty data to create invite")
-		return c.JSON(http.StatusBadRequest, Map{
-			"error": ErrEmptyData,
-		})
-	}
-
 	invite, err := h.inviteService.CreateInvite(claims.Username, newInvite)
 	if err != nil {
 		log.Printf("ERROR [Router] Failed to create invite: %v\n", err)
@@ -54,7 +47,7 @@ func (h *Handler) CreateInvite(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, Map{
-		"inviteUrl": invite.URLString,
+		"inviteUrl": invite.ToURL(h.config.Router.Domain),
 	})
 }
 

@@ -6,6 +6,7 @@
 package models
 
 import (
+	"fmt"
 	"time"
 )
 
@@ -22,6 +23,11 @@ type CreateInvite struct {
 	Server     string    `json:"server"`
 	OneTimeUse bool      `json:"oneTimeUse"`
 	ExpiresAt  time.Time `json:"expiresAt"`
+}
+
+// ToURL returns the URL representation of the invite
+func (i *Invite) ToURL(domain string) string {
+	return fmt.Sprintf("https://%s/i/%s", domain, i.Hash)
 }
 
 // IsEmpty returns if all data is present

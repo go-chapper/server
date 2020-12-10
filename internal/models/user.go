@@ -11,14 +11,12 @@ import (
 )
 
 type User struct {
-	Username      string `json:"username" db:"username"`
-	Password      string `json:"-" db:"password"`
-	Email         string `json:"email" db:"email"`
-	EmailVerified bool   `json:"email_verified" db:"email_verified"`
-	Avatar        string `json:"avatar" db:"avatar"`
-	PublicKey     string `json:"-" db:"publickey"`
-	TwoFASecret   string `json:"-" db:"twofa_secret"`
-	TwoFAVerify   string `json:"-" db:"twofa_verify"`
+	Username    string `json:"username" db:"username"`
+	Password    string `json:"-" db:"password"`
+	Email       string `json:"email" db:"email"`
+	PublicKey   string `json:"-" db:"publickey"`
+	TwoFASecret string `json:"-" db:"twofa_secret"`
+	TwoFAVerify string `json:"-" db:"twofa_verify"`
 	// Role           []Role
 	// Friends        []*User
 	// Servers        []*Server

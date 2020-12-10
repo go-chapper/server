@@ -55,11 +55,21 @@ func (s *Store) CreateUser(user *models.SignupUser) error {
 func (s *Store) UpdateUser(username string, user *models.User) error {
 	_, err := s.conn.Exec(`
 		UPDATE users
-		SET password = ?, email = ?, avatar = ?
+		SET password = ?, email = ?
 		WHERE username = ?`,
 		user.Password,
 		user.Email,
-		user.Avatar,
+		username,
+	)
+	return err
+}
+
+func (s *Store) UpdateTwoFAVerify(username, verify string) error {
+	_, err := s.conn.Exec(`
+		UPDATE users
+		SET twofa_verify = ?
+		WHERE username = ?`,
+		verify,
 		username,
 	)
 	return err

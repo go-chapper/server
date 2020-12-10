@@ -12,6 +12,7 @@ import (
 
 	"chapper.dev/server/internal/config"
 	"chapper.dev/server/internal/constants"
+	"chapper.dev/server/internal/store/schemas"
 
 	_ "github.com/go-sql-driver/mysql" // MySQL driver
 	"github.com/jmoiron/sqlx"
@@ -73,7 +74,12 @@ func DSN(options config.StoreOptions) string {
 
 // Migrate migrates the neccesary database tables
 func (s *Store) Migrate() error {
-	// TODO <2020/10/12>: Re-implement
+	for _, scheme := range schemas.All() {
+		_, err := s.conn.Exec(scheme)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
 

@@ -143,7 +143,7 @@ func (h *Handler) AuthLogin(c echo.Context) error {
 			})
 		}
 
-		err = h.userService.SaveTempToken(acc.Username, temp)
+		err = h.userService.UpdateTwoFAVerify(acc.Username, temp)
 		if err != nil {
 			log.Printf("ERROR [Router] Failed to save temp token for 2FA: %v\n", err)
 			return c.JSON(http.StatusInternalServerError, Map{

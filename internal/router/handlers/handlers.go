@@ -15,7 +15,6 @@ import (
 	"chapper.dev/server/internal/services/server"
 	"chapper.dev/server/internal/services/user"
 	"chapper.dev/server/internal/store"
-	"chapper.dev/server/internal/transport/broadcast"
 
 	j "github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
@@ -63,9 +62,9 @@ const (
 
 // Handler provides an interface to handle different HTTP request
 type Handler struct {
-	config        *config.Config
-	signalingHub  broadcast.Hub
-	messagingHub  broadcast.Hub
+	config *config.Config
+	// signalingHub  broadcast.Hub
+	// messagingHub  broadcast.Hub
 	userService   user.Service
 	authService   auth.Service
 	inviteService invite.Service
@@ -87,13 +86,13 @@ func New(store *store.Store, config *config.Config) *Handler {
 	as := auth.NewService()
 	cs := call.NewService()
 
-	signalingHub := broadcast.NewSignalingHub()
-	messagingHub := broadcast.NewMessagingHub()
+	// signalingHub := broadcast.NewSignalingHub()
+	// messagingHub := broadcast.NewMessagingHub()
 
 	return &Handler{
-		config:        config,
-		signalingHub:  signalingHub,
-		messagingHub:  messagingHub,
+		config: config,
+		// signalingHub:  signalingHub,
+		// messagingHub:  messagingHub,
 		userService:   us,
 		authService:   as,
 		inviteService: is,
@@ -105,8 +104,8 @@ func New(store *store.Store, config *config.Config) *Handler {
 
 // RunHubs runs the different broadcasting hubs
 func (h *Handler) RunHubs() {
-	h.signalingHub.Run()
-	h.messagingHub.Run()
+	// h.signalingHub.Run()
+	// h.messagingHub.Run()
 }
 
 func getClaimes(c echo.Context) *jwt.Claims {
