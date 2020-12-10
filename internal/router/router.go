@@ -144,10 +144,10 @@ func (r *Router) AddRoutes(handle *handlers.Handler) {
 	rooms.GET("", handle.GetRooms)
 
 	// CALLS
-	calls := v1.Group("/calls")
-	calls.POST("/new/:room-hash", handle.NewCall)
-	calls.POST("/sdp/:room-hash", handle.ForwardSDP)
-	calls.POST("/join/:call-hash", handle.JoinCall)
+	calls := r.echo.Group("/calls")
+	// calls.POST("/new/:room-hash", handle.NewCall)
+	// calls.POST("/sdp/:room-hash", handle.ForwardSDP)
+	calls.GET("/join/:room-hash", handle.JoinCall)
 
 	//// AUTH ////
 	auth := r.echo.Group("/auth")

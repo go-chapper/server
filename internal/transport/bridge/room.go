@@ -73,6 +73,20 @@ func (r *Room) GetUsersList() []*User {
 	return users
 }
 
+// GetParticipants returns all users except the provided user as a slice
+func (r *Room) GetParticipants(u *User) []*User {
+	users := []*User{}
+
+	for _, user := range r.users {
+		if u.ID == user.ID {
+			continue
+		}
+		users = append(users, user)
+	}
+
+	return users
+}
+
 // Join connects the user to the room
 func (r *Room) Join(user *User) {
 	r.join <- user

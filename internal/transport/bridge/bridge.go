@@ -95,10 +95,11 @@ func (b *Bridge) RemoveRoom(roomHash string) error {
 	return nil
 }
 
-func (b *Bridge) Connect(username, roomHash string, w http.ResponseWriter, r *http.Request) {
+// Connect connects a user with 'username' to room and sets up the sognaling websocket
+func (b *Bridge) Connect(username, roomHash string, w http.ResponseWriter, r *http.Request) error {
 	conn, err := wsUpgrader.Upgrade(w, r, nil)
 	if err != nil {
-		return
+		return err
 	}
 
 	// Setup WebRTC session
@@ -108,17 +109,21 @@ func (b *Bridge) Connect(username, roomHash string, w http.ResponseWriter, r *ht
 	api := webrtc.NewAPI(webrtc.WithMediaEngine(mediaEngine))
 	pc, err := api.NewPeerConnection(connectionConfig)
 	if err != nil {
-		return
+		return err
 	}
 
 	room, err := b.GetOrCreateRoom(roomHash)
 	if err != nil {
-		return
+		return err
 	}
 
 	user := NewUser(username, conn, pc, room)
 	user.AddListeners()
 
+	user.room.Join(user)
+
 	go user.startRead()
 	go user.startWrite()
+
+	return user.SendEventUser()
 }

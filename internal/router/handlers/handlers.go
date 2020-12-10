@@ -85,6 +85,7 @@ func New(store *store.Store, config *config.Config) *Handler {
 	ss := server.NewService(store)
 	rs := room.NewService(store)
 	as := auth.NewService()
+	cs := call.NewService()
 
 	signalingHub := broadcast.NewSignalingHub()
 	messagingHub := broadcast.NewMessagingHub()
@@ -98,6 +99,7 @@ func New(store *store.Store, config *config.Config) *Handler {
 		inviteService: is,
 		serverService: ss,
 		roomService:   rs,
+		callService:   cs,
 	}
 }
 

@@ -5,7 +5,7 @@
 package handlers
 
 import (
-	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -13,17 +13,16 @@ import (
 
 // NewCall initiates a new call
 func (h *Handler) NewCall(c echo.Context) error {
-	// TODO <2020/25/11>: Add room type check
+	claims := getClaimes(c)
+	roomHash := c.Param("room-hash")
 
-	fmt.Println("Hey there")
-
-	// err := h.callService.NewCall(c.Param("room-hash"))
-	// if err != nil {
-	// 	log.Printf("ERROR [Router] Failed to start new call: %v\n", err)
-	// 	return c.JSON(http.StatusInternalServerError, Map{
-	// 		"errror": ErrInternal,
-	// 	})
-	// }
+	err := h.callService.NewCall(claims.Username, roomHash, c.Response().Writer, c.Request())
+	if err != nil {
+		log.Printf("ERROR [Router] Unable to create new call: %v\n", err)
+		return c.JSON(http.StatusBadRequest, Map{
+			"error": ErrInternal,
+		})
+	}
 
 	return c.JSON(http.StatusOK, Map{
 		"status": "call-created",
@@ -31,7 +30,20 @@ func (h *Handler) NewCall(c echo.Context) error {
 }
 
 func (h *Handler) JoinCall(c echo.Context) error {
-	return nil
+	// claims := getClaimes(c)
+	roomHash := c.Param("room-hash")
+
+	err := h.callService.NewCall("Test", roomHash, c.Response().Writer, c.Request())
+	if err != nil {
+		log.Printf("ERROR [Router] Unable to create or join call: %v\n", err)
+		return c.JSON(http.StatusBadRequest, Map{
+			"error": ErrInternal,
+		})
+	}
+
+	return c.JSON(http.StatusOK, Map{
+		"status": "call-created",
+	})
 }
 
 func (h *Handler) ForwardSDP(c echo.Context) error {
