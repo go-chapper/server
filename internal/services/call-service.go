@@ -2,8 +2,7 @@
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 
-// Package call provides utilities to create, join and leave calls
-package call
+package services
 
 import (
 	"net/http"
@@ -11,16 +10,16 @@ import (
 	"chapper.dev/server/internal/transport/bridge"
 )
 
-type Service struct {
+type CallService struct {
 	bridge *bridge.Bridge
 }
 
-func NewService() Service {
-	return Service{
+func NewCallService() CallService {
+	return CallService{
 		bridge: bridge.NewBridge(),
 	}
 }
 
-func (s Service) NewCall(username, roomHash string, w http.ResponseWriter, r *http.Request) error {
+func (s CallService) NewCall(username, roomHash string, w http.ResponseWriter, r *http.Request) error {
 	return s.bridge.Connect(username, roomHash, w, r)
 }

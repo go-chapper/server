@@ -2,13 +2,13 @@
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 
-// Package auth provides utilities used to authenticte users
-package auth
+package services
 
 import (
-	"log"
+	"net/http"
 
 	"chapper.dev/server/internal/config"
+	"chapper.dev/server/internal/log"
 	"chapper.dev/server/internal/models"
 	"chapper.dev/server/internal/modules/avatar"
 	"chapper.dev/server/internal/modules/hash"
@@ -18,57 +18,60 @@ import (
 	"chapper.dev/server/internal/utils"
 
 	"github.com/labstack/echo/v4"
-	"github.com/pkg/errors"
 )
 
 var (
-	ErrBindUser          = errors.New("bind-user")
-	ErrMissingDataUser   = errors.New("missing-data-user")
-	ErrHashPassword      = errors.New("hash-password")
-	ErrCreateUser        = errors.New("create-user")
-	ErrGetUser           = errors.New("get-user")
-	ErrCreateAvatar      = errors.New("create-avatar")
-	ErrCreateVerifyToken = errors.New("create-verify-token")
-	ErrUpdateVerifyToken = errors.New("update-verify-token")
-	ErrInvalidPassword   = errors.New("invalid-password")
+	ErrCreateVerifyToken = NewError("create-verify-token", "Failed to create 2fa verify token", http.StatusInternalServerError)
+	ErrUpdateVerifyToken = NewError("update-verify-token", "Failed to update 2fa verify token", http.StatusInternalServerError)
+	ErrMissingDataUser   = NewError("missing-data-user", "Some data to login/register is missing", http.StatusBadRequest)
+	ErrInvalidPassword   = NewError("invalid-password", "The user provided an invalid password", http.StatusUnauthorized)
+	ErrBindUser          = NewError("bind-user", "Tailed to bind the user model", http.StatusInternalServerError)
+	ErrCreateAvatar      = NewError("create-avatar", "Failed to create avatar", http.StatusInternalServerError)
+	ErrHashPassword      = NewError("hash-password", "Failed to hash password", http.StatusInternalServerError)
+	ErrSignToken         = NewError("sign-token", "Failed to sign jwt token", http.StatusInternalServerError)
+	ErrCreateUser        = NewError("create-user", "Failed to create user", http.StatusInternalServerError)
+	ErrGetUser           = NewError("get-user", "Failed to get user", http.StatusInternalServerError)
 )
 
-// Service wraps authentication dependencies
-type Service struct {
+// AuthService wraps authentication dependencies
+type AuthService struct {
 	hash   hash.Hash
 	store  *store.Store
 	config *config.Config
-	// logger *logger.Logger
+	logger *log.Logger
 }
 
-// NewService returns a new authentication service
-func NewService(store *store.Store, config *config.Config) Service {
-	return Service{
+// NewAuthService returns a new authentication service
+func NewAuthService(store *store.Store, config *config.Config, logger *log.Logger) AuthService {
+	return AuthService{
 		hash:   hash.NewArgon2(),
 		store:  store,
 		config: config,
+		logger: logger,
 	}
 }
 
 // Register handles the registration process of a new user
-func (s Service) Register(c echo.Context) error {
-	var user models.SignupUser
+func (s AuthService) Register(c echo.Context) error {
+	var user models.PublicUser
 
 	// Bind to signup user model
 	err := c.Bind(&user)
 	if err != nil {
-		log.Printf("[E] auth service: %v\n", err)
+		s.logger.Error(err)
 		return ErrBindUser
 	}
 
 	// Check if some data is missing
 	if user.IsEmpty() {
+		s.logger.Info("Auth service: Some data to login/register is missing")
 		return ErrMissingDataUser
 	}
 
 	// Hach the password to save into the database
 	hashedPassword, err := s.HashPassword(user.Password)
 	if err != nil {
+		s.logger.Error(err)
 		return ErrHashPassword
 	}
 	user.Password = hashedPassword
@@ -76,6 +79,7 @@ func (s Service) Register(c echo.Context) error {
 	// Insert new user into the database
 	err = s.store.CreateUser(user)
 	if err != nil {
+		s.logger.Error(err)
 		return ErrCreateUser
 	}
 
@@ -83,6 +87,7 @@ func (s Service) Register(c echo.Context) error {
 	profileAvatar := avatar.New(240, user.Username)
 	err = profileAvatar.Generate(s.config.Router.AvatarPath)
 	if err != nil {
+		s.logger.Error(err)
 		return ErrCreateAvatar
 	}
 
@@ -90,24 +95,26 @@ func (s Service) Register(c echo.Context) error {
 }
 
 // Login handles the login process of a user
-func (s Service) Login(c echo.Context) (string, error) {
-	var user models.User
+func (s AuthService) Login(c echo.Context) (string, error) {
+	var user models.PublicUser
 
 	// Bind to user model
 	err := c.Bind(&user)
 	if err != nil {
-		// TODO <2020/11/12>: Log
+		s.logger.Error(err)
 		return "", ErrBindUser
 	}
 
 	// Check if some data is missing
 	if user.IsLoginEmpty() {
+		s.logger.Info("Auth service: Some data to login/register is missing")
 		return "", ErrMissingDataUser
 	}
 
 	// Get the account from the database by username
 	account, err := s.store.GetUser(user.Username)
 	if err != nil {
+		s.logger.Error(err)
 		return "", ErrGetUser
 	}
 
@@ -115,11 +122,13 @@ func (s Service) Login(c echo.Context) (string, error) {
 	if account.UsesTwoFA() {
 		verifyToken, err := s.GenerateVerifyToken()
 		if err != nil {
+			s.logger.Error(err)
 			return "", ErrCreateVerifyToken
 		}
 
 		err = s.store.UpdateTwoFAVerify(account.Username, verifyToken)
 		if err != nil {
+			s.logger.Error(err)
 			return "", ErrUpdateVerifyToken
 		}
 
@@ -129,6 +138,7 @@ func (s Service) Login(c echo.Context) (string, error) {
 	// Compare the provided with the saved password
 	valid, err := s.ComparePassword(user.Password, account.Password)
 	if !valid || err != nil {
+		s.logger.Error(err)
 		return "", ErrInvalidPassword
 	}
 
@@ -139,14 +149,15 @@ func (s Service) Login(c echo.Context) (string, error) {
 
 	signedToken, err := token.Sign()
 	if err != nil {
-		return "", err
+		s.logger.Error(err)
+		return "", ErrSignToken
 	}
 
 	return signedToken, nil
 }
 
 // HashPassword returns the Argon2-hashed password or an error
-func (s Service) HashPassword(password string) (string, error) {
+func (s AuthService) HashPassword(password string) (string, error) {
 	h, err := s.hash.Hash(password)
 	if err != nil {
 		return "", err
@@ -156,31 +167,31 @@ func (s Service) HashPassword(password string) (string, error) {
 }
 
 // ComparePassword returns if the input and the real password match
-func (s Service) ComparePassword(input, hashed string) (bool, error) {
+func (s AuthService) ComparePassword(input, hashed string) (bool, error) {
 	return s.hash.Valid(input, hashed)
 }
 
 // NewJWT returns a new JWT
-func (s Service) NewJWT(secret string, c *jwt.Claims) *jwt.JWT {
+func (s AuthService) NewJWT(secret string, c *jwt.Claims) *jwt.JWT {
 	return jwt.New(secret, c)
 }
 
 // ParseJWT parses a JWT
-func (s Service) ParseJWT(input, key string, c jwt.Claims) (*jwt.JWT, error) {
+func (s AuthService) ParseJWT(input, key string, c jwt.Claims) (*jwt.JWT, error) {
 	return jwt.Parse(input, key, c)
 }
 
 // GenerateTOTP generates a new TOTP
-func (s Service) GenerateTOTP(issuer, account string) (twofa.TOTPKey, error) {
+func (s AuthService) GenerateTOTP(issuer, account string) (twofa.TOTPKey, error) {
 	return twofa.GenerateTOTP(issuer, account)
 }
 
 // ValidateTOTP validates a 6 digit TOTP code
-func (s Service) ValidateTOTP(code, secret string) bool {
+func (s AuthService) ValidateTOTP(code, secret string) bool {
 	return twofa.ValidateTOTP(code, secret)
 }
 
 // GenerateVerifyToken generates a random verify token
-func (s Service) GenerateVerifyToken() (string, error) {
+func (s AuthService) GenerateVerifyToken() (string, error) {
 	return utils.RandomCryptoString(16)
 }

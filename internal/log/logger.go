@@ -49,10 +49,20 @@ func (l *Logger) Fatal(err error) {
 
 // Error logs an error via the underlying standard logger
 func (l *Logger) Error(err error) {
-	l.logger.Printf("[E] %v\n", err)
+	l.logger.Printf("[E] %v", err)
+}
+
+// Errorf logs an error via the underlying standard logger
+func (l *Logger) Errorf(format string, v ...interface{}) {
+	l.logger.Printf("[E] "+format, v...)
 }
 
 // Info logs a info message via the underlying standard logger
 func (l *Logger) Info(msg string) {
-	l.logger.Printf("[I] %s\n", msg)
+	l.logger.Printf("[I] %s", msg)
+}
+
+// Infof logs a info message via the underlying standard logger
+func (l *Logger) Infof(format string, v ...interface{}) {
+	l.logger.Printf("[I] "+format, v...)
 }

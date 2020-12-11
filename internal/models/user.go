@@ -22,7 +22,7 @@ type User struct {
 	// Servers        []*Server
 }
 
-type SignupUser struct {
+type PublicUser struct {
 	Username  string `json:"username"`
 	Password  string `json:"password"`
 	Email     string `json:"email"`
@@ -118,13 +118,13 @@ func Basic() Role {
 }
 
 // IsEmpty returns if some or all values are empty
-func (u *SignupUser) IsEmpty() bool {
+func (u *PublicUser) IsEmpty() bool {
 	return u.Username == "" || u.Password == "" || u.PublicKey == ""
 }
 
 // IsLoginEmpty returns if all required data is set to login a user (username and
 // password)
-func (u *User) IsLoginEmpty() bool {
+func (u *PublicUser) IsLoginEmpty() bool {
 	return u.Username == "" || u.Password == ""
 }
 

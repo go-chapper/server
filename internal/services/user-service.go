@@ -2,8 +2,7 @@
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 
-// Package user provides a user service to handle user related actions
-package user
+package services
 
 import (
 	"chapper.dev/server/internal/config"
@@ -12,15 +11,15 @@ import (
 	"chapper.dev/server/internal/store"
 )
 
-// Service is the top-level service struct
-type Service struct {
+// UserService is the top-level service struct
+type UserService struct {
 	store  *store.Store
-	config config.Config
+	config *config.Config
 }
 
-// NewService returns a new user service
-func NewService(s *store.Store, c config.Config) Service {
-	return Service{
+// NewUserService returns a new user service
+func NewUserService(s *store.Store, c *config.Config) UserService {
+	return UserService{
 		store:  s,
 		config: c,
 	}
@@ -28,17 +27,17 @@ func NewService(s *store.Store, c config.Config) Service {
 
 // GetUser returns a user identified by the provided 'username' or an error if the user
 // does not exist
-func (s Service) GetUser(username string) (models.User, error) {
+func (s UserService) GetUser(username string) (models.User, error) {
 	return s.store.GetUser(username)
 }
 
-func (s Service) GetUserPublicKey(username string) (string, error) {
+func (s UserService) GetUserPublicKey(username string) (string, error) {
 	return s.store.GetUserPublicKey(username)
 }
 
 // CreateUser creates a new 'user' or returns an error if the new user could not be
 // created
-func (s Service) CreateUser(user models.SignupUser) error {
+func (s UserService) CreateUser(user models.PublicUser) error {
 	// TODO <2020/10/09>: Can we optimize/improve this?
 	// settings, err := s.store.GetSettings()
 	// if err != nil {
@@ -66,10 +65,10 @@ func (s Service) CreateUser(user models.SignupUser) error {
 	return a.Generate(s.config.Router.AvatarPath)
 }
 
-func (s Service) UpdateTwoFAVerify(username, verify string) error {
+func (s UserService) UpdateTwoFAVerify(username, verify string) error {
 	return s.store.UpdateTwoFAVerify(username, verify)
 }
 
-func (s Service) PutUserServer(username string) ([]models.Server, error) {
+func (s UserService) PutUserServer(username string) ([]models.Server, error) {
 	return nil, nil
 }

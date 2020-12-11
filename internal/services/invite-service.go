@@ -2,8 +2,7 @@
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 
-// Package invite provides utilities to create and validate invite links
-package invite
+package services
 
 import (
 	"errors"
@@ -19,22 +18,22 @@ var (
 	ErrMissingData = errors.New("invite-missing-data")
 )
 
-// Service wrapps all dependencies of the invite service
-type Service struct {
+// InviteService wrapps all dependencies of the invite service
+type InviteService struct {
 	store  *store.Store
-	config config.Config
+	config *config.Config
 }
 
 // NewService returns a new invite service
-func NewService(store *store.Store, config config.Config) Service {
-	return Service{
+func NewInviteService(store *store.Store, config *config.Config) InviteService {
+	return InviteService{
 		store:  store,
 		config: config,
 	}
 }
 
 // CreateInvite creates a new invite link
-func (s Service) CreateInvite(createdBy string, newInvite *models.CreateInvite) (*models.Invite, error) {
+func (s InviteService) CreateInvite(createdBy string, newInvite *models.CreateInvite) (*models.Invite, error) {
 	if newInvite.IsEmpty() {
 		return nil, ErrMissingData
 	}

@@ -7,13 +7,9 @@ package handlers
 
 import (
 	"chapper.dev/server/internal/config"
+	"chapper.dev/server/internal/log"
 	"chapper.dev/server/internal/modules/jwt"
-	"chapper.dev/server/internal/services/auth"
-	"chapper.dev/server/internal/services/call"
-	"chapper.dev/server/internal/services/invite"
-	"chapper.dev/server/internal/services/room"
-	"chapper.dev/server/internal/services/server"
-	"chapper.dev/server/internal/services/user"
+	"chapper.dev/server/internal/services"
 	"chapper.dev/server/internal/store"
 
 	j "github.com/dgrijalva/jwt-go"
@@ -63,34 +59,36 @@ const (
 // Handler provides an interface to handle different HTTP request
 type Handler struct {
 	config *config.Config
+	logger *log.Logger
 	// signalingHub  broadcast.Hub
 	// messagingHub  broadcast.Hub
-	userService   user.Service
-	authService   auth.Service
-	inviteService invite.Service
-	serverService server.Service
-	roomService   room.Service
-	callService   call.Service
+	inviteService services.InviteService
+	serverService services.ServerService
+	userService   services.UserService
+	authService   services.AuthService
+	roomService   services.RoomService
+	callService   services.CallService
 }
 
 // Map is a wrapper for an map[string]interface{}, which gets used in JSON responses
 type Map map[string]interface{}
 
 // New returns a new handler with all required services injected
-func New(store *store.Store, config *config.Config) *Handler {
+func New(store *store.Store, config *config.Config, logger *log.Logger) *Handler {
 	// Create services
-	is := invite.NewService(store, *config)
-	us := user.NewService(store, *config)
-	ss := server.NewService(store)
-	rs := room.NewService(store)
-	as := auth.NewService(store, config)
-	cs := call.NewService()
+	is := services.NewInviteService(store, config)
+	us := services.NewUserService(store, config)
+	as := services.NewAuthService(store, config, logger)
+	ss := services.NewServerService(store)
+	rs := services.NewRoomService(store)
+	cs := services.NewCallService()
 
 	// signalingHub := broadcast.NewSignalingHub()
 	// messagingHub := broadcast.NewMessagingHub()
 
 	return &Handler{
 		config: config,
+		logger: logger,
 		// signalingHub:  signalingHub,
 		// messagingHub:  messagingHub,
 		userService:   us,

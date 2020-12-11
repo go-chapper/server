@@ -22,6 +22,7 @@ command.
 -   Use null package (store/database)
 -   Use logger
 -   Use custom errors (auth)
+-   Use app
 
 ## Ideas
 

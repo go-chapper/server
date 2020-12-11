@@ -56,7 +56,7 @@ var runCmd = &cobra.Command{
 		}
 
 		r := router.New(c)
-		h := handlers.New(s, c)
+		h := handlers.New(s, c, logger)
 		r.AddRoutes(h)
 
 		t, err := turn.New(c.Turn.PublicIP, c.Router.Domain, "udp4", c.Turn.Port)

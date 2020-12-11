@@ -37,7 +37,7 @@ func (s *Store) GetUserServers(username string) error {
 	return nil
 }
 
-func (s *Store) CreateUser(user models.SignupUser) error {
+func (s *Store) CreateUser(user models.PublicUser) error {
 	_, err := s.conn.Exec(`
 		INSERT INTO users
 		(username, password, email, publickey)
