@@ -34,17 +34,20 @@ func NewRoomService(store *store.Store, logger *log.Logger) RoomService {
 func (s RoomService) CreateRoom(c echo.Context) error {
 	var room *models.Room
 
+	// Bind to room model
 	err := c.Bind(room)
 	if err != nil {
 		s.logger.Errorc(roomCtx, err)
 		return errors.ErrBindRoom
 	}
 
+	// Check if some data is missing or invalid
 	if room.IsEmpty() || room.Invalid() {
 		s.logger.Infoc(roomCtx, "data missing to create room")
 		return errors.ErrMissingRoomData
 	}
 
+	// Calculate room hash and insert into database
 	room.Hash = hash.FNV64(room.Name)
 	err = s.store.CreateRoom(room)
 	if err != nil {
@@ -55,18 +58,45 @@ func (s RoomService) CreateRoom(c echo.Context) error {
 	return nil
 }
 
-func (s RoomService) GetRoom(serverHash string) (models.Room, error) {
-	return s.store.GetRoom(serverHash)
+// GetRoom returns ONE room from the database identified by the provided hash
+func (s RoomService) GetRoom(c echo.Context) (*models.Room, error) {
+	roomHash := c.Param("room-hash")
+
+	if roomHash == "" {
+		s.logger.Infoc(roomCtx, "invalid room hash")
+		return nil, errors.ErrInvalidRoomHash
+	}
+
+	return s.store.GetRoom(roomHash)
 }
 
+// GetRooms returns multiple rooms from the database
 func (s RoomService) GetRooms() ([]models.Room, error) {
 	return s.store.GetRooms()
 }
 
-func (s RoomService) UpdateRoom(roomHash string) error {
+// UpdateRoom updates ONE room in the database indentified by the provided hash
+func (s RoomService) UpdateRoom(c echo.Context) error {
+	var newRoom *models.Room
+	roomHash := c.Param("room-hash")
+
+	err := c.Bind(newRoom)
+	if err != nil {
+		s.logger.Errorc(roomCtx, err)
+		return errors.ErrBindRoom
+	}
+
+	err = s.store.UpdateRoom(roomHash, newRoom)
+	if err != nil {
+		s.logger.Errorc(roomCtx, err)
+		return errors.ErrUpdateRoom
+	}
+
 	return nil
 }
 
-func (s RoomService) DeleteRoom(roomHash string) error {
+// DeleteRoom deletes ONE room from the database identified by the provided room hash
+func (s RoomService) DeleteRoom(c echo.Context) error {
+	roomHash := c.Param("room-hash")
 	return s.store.DeleteRoom(roomHash)
 }

@@ -38,7 +38,9 @@ var (
 var (
 	ErrBindRoom        = New("bind-room", "failed to bind to room model", http.StatusInternalServerError)
 	ErrMissingRoomData = New("missing-room-data", "data missing to create room", http.StatusBadRequest)
+	ErrInvalidRoomHash = New("invalid-room-hash", "invalid or empty room hash", http.StatusBadRequest)
 	ErrCreateRoom      = New("create-room", "failed to create room", http.StatusInternalServerError)
+	ErrUpdateRoom      = New("update-room", "failed to update room", http.StatusInternalServerError)
 )
 
 // Misc

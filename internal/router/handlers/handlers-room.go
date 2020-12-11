@@ -5,7 +5,6 @@
 package handlers
 
 import (
-	"log"
 	"net/http"
 
 	"chapper.dev/server/internal/services/errors"
@@ -45,13 +44,20 @@ func (h *Handler) CreateRoom(c echo.Context) error {
 	})
 }
 
-// GetRoom returns a room identified by it's name
+// GetRoom returns a room identified by its name
 func (h *Handler) GetRoom(c echo.Context) error {
-	room, err := h.roomService.GetRoom(c.Param("room-hash"))
+	room, err := h.roomService.GetRoom(c)
 	if err != nil {
-		log.Printf("ERROR [Router] Failed to get server: %v\n", err)
+		if se, ok := err.(*errors.ServiceError); ok {
+			h.logger.Errorc(routerCtx, se)
+			return c.JSON(se.Code(), Map{
+				"error": se.Err(),
+			})
+		}
+
+		h.logger.Errorc(routerCtx, err)
 		return c.JSON(http.StatusInternalServerError, Map{
-			"errror": ErrInternal,
+			"error": ErrInternal,
 		})
 	}
 
@@ -60,13 +66,20 @@ func (h *Handler) GetRoom(c echo.Context) error {
 	})
 }
 
-// GetRooms returns a room identified by it's name
+// GetRooms returns a list of rooms
 func (h *Handler) GetRooms(c echo.Context) error {
 	rooms, err := h.roomService.GetRooms()
 	if err != nil {
-		log.Printf("ERROR [Router] Failed to get rooms: %v\n", err)
+		if se, ok := err.(*errors.ServiceError); ok {
+			h.logger.Errorc(routerCtx, se)
+			return c.JSON(se.Code(), Map{
+				"error": se.Err(),
+			})
+		}
+
+		h.logger.Errorc(routerCtx, err)
 		return c.JSON(http.StatusInternalServerError, Map{
-			"errror": ErrInternal,
+			"error": ErrInternal,
 		})
 	}
 
@@ -90,11 +103,18 @@ func (h *Handler) DeleteRoom(c echo.Context) error {
 		})
 	}
 
-	err := h.roomService.DeleteRoom(c.Param("room-hash"))
+	err := h.roomService.DeleteRoom(c)
 	if err != nil {
-		log.Printf("ERROR [Router] Failed to delete room: %v\n", err)
+		if se, ok := err.(*errors.ServiceError); ok {
+			h.logger.Errorc(routerCtx, se)
+			return c.JSON(se.Code(), Map{
+				"error": se.Err(),
+			})
+		}
+
+		h.logger.Errorc(routerCtx, err)
 		return c.JSON(http.StatusInternalServerError, Map{
-			"errror": ErrInternal,
+			"error": ErrInternal,
 		})
 	}
 

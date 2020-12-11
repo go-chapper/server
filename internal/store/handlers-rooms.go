@@ -23,9 +23,9 @@ func (s *Store) CreateRoom(room *models.Room) error {
 }
 
 // GetRoom selects ONE room entry with provided 'roomHash' from the database
-func (s *Store) GetRoom(roomHash string) (models.Room, error) {
-	var room models.Room
-	err := s.conn.Get(&room,
+func (s *Store) GetRoom(roomHash string) (*models.Room, error) {
+	var room *models.Room
+	err := s.conn.Get(room,
 		`SELECT hash, name, type, description 
 		FROM rooms 
 		WHERE hash = ?`,
