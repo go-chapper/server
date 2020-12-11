@@ -22,11 +22,8 @@ type ErrorCode string
 const (
 	ErrInternal        ErrorCode = "internal-error"
 	ErrBind            ErrorCode = "bind-error"
-	ErrEmptyData       ErrorCode = "empty-data"
-	ErrInvalidData     ErrorCode = "invalid-data"
 	ErrGetUser         ErrorCode = "get-user-error"
 	ErrHashPassword    ErrorCode = "hash-error"
-	ErrCreateUser      ErrorCode = "create-user-error"
 	ErrUsernameTaken   ErrorCode = "username-taken"
 	ErrUnauthorized    ErrorCode = "unauthorized"
 	ErrTwoFA           ErrorCode = "2fa-error"
@@ -53,8 +50,7 @@ const (
 	StatusJWTRefreshed  StatusCode = "jwt-refreshed"
 )
 
-// NOTE(Techassi): Maybe split handlers for specific handler groups so we dont need to
-// inject all services into one handler
+var routerCtx = log.NewContext("router")
 
 // Handler provides an interface to handle different HTTP request
 type Handler struct {
@@ -76,11 +72,11 @@ type Map map[string]interface{}
 // New returns a new handler with all required services injected
 func New(store *store.Store, config *config.Config, logger *log.Logger) *Handler {
 	// Create services
-	is := services.NewInviteService(store, config)
-	us := services.NewUserService(store, config)
+	is := services.NewInviteService(store, config, logger)
 	as := services.NewAuthService(store, config, logger)
+	us := services.NewUserService(store, config)
+	rs := services.NewRoomService(store, logger)
 	ss := services.NewServerService(store)
-	rs := services.NewRoomService(store)
 	cs := services.NewCallService()
 
 	// signalingHub := broadcast.NewSignalingHub()

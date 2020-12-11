@@ -7,7 +7,7 @@ package handlers
 import (
 	"net/http"
 
-	"chapper.dev/server/internal/services"
+	"chapper.dev/server/internal/services/errors"
 
 	"github.com/labstack/echo/v4"
 )
@@ -16,14 +16,14 @@ import (
 func (h *Handler) AuthRegister(c echo.Context) error {
 	err := h.authService.Register(c)
 	if err != nil {
-		if se, ok := err.(*services.ServiceError); ok {
-			h.logger.Errorf("Router: %v", se)
+		if se, ok := err.(*errors.ServiceError); ok {
+			h.logger.Errorc(routerCtx, se)
 			return c.JSON(se.Code(), Map{
 				"error": se.Err(),
 			})
 		}
 
-		h.logger.Errorf("Router: %v", err)
+		h.logger.Errorc(routerCtx, err)
 		return c.JSON(http.StatusInternalServerError, Map{
 			"error": ErrInternal,
 		})
@@ -43,14 +43,14 @@ func (h *Handler) AuthRefresh(c echo.Context) error {
 func (h *Handler) AuthLogin(c echo.Context) error {
 	token, err := h.authService.Login(c)
 	if err != nil {
-		if se, ok := err.(*services.ServiceError); ok {
-			h.logger.Errorf("Router: %v", se)
+		if se, ok := err.(*errors.ServiceError); ok {
+			h.logger.Errorc(routerCtx, se)
 			return c.JSON(se.Code(), Map{
 				"error": se.Err(),
 			})
 		}
 
-		h.logger.Errorf("Router: %v", err)
+		h.logger.Errorc(routerCtx, err)
 		return c.JSON(http.StatusInternalServerError, Map{
 			"error": ErrInternal,
 		})

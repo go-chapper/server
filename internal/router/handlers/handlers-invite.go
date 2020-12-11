@@ -5,15 +5,15 @@
 package handlers
 
 import (
-	"log"
 	"net/http"
 
-	"chapper.dev/server/internal/models"
+	"chapper.dev/server/internal/services/errors"
+
 	"github.com/labstack/echo/v4"
 )
 
-// Invite handles the invite when a user enters an invite link
-func (h *Handler) Invite(c echo.Context) error {
+// GetInvite handles the invite when a user enters an invite link
+func (h *Handler) GetInvite(c echo.Context) error {
 	return c.String(http.StatusOK, c.Param("invite"))
 }
 
@@ -27,26 +27,23 @@ func (h *Handler) CreateInvite(c echo.Context) error {
 		})
 	}
 
-	newInvite := new(models.CreateInvite)
-	err := c.Bind(newInvite)
+	invite, err := h.inviteService.CreateInvite(claims.Username, c)
 	if err != nil {
-		log.Printf("WARNING [Router] Unable to bind to model: %v\n", err)
-		return c.JSON(http.StatusBadRequest, Map{
-			"error": ErrBind,
-		})
-	}
+		if se, ok := err.(*errors.ServiceError); ok {
+			h.logger.Errorc(routerCtx, se)
+			return c.JSON(se.Code(), Map{
+				"error": se.Err(),
+			})
+		}
 
-	invite, err := h.inviteService.CreateInvite(claims.Username, newInvite)
-	if err != nil {
-		log.Printf("ERROR [Router] Failed to create invite: %v\n", err)
+		h.logger.Errorc(routerCtx, err)
 		return c.JSON(http.StatusInternalServerError, Map{
-			"errror": "Internal server error",
-			"code":   ErrCreateInvite,
+			"error": ErrInternal,
 		})
 	}
 
 	return c.JSON(http.StatusOK, Map{
-		"inviteUrl": invite.ToURL(h.config.Router.Domain),
+		"url": invite.ToURL(h.config.Router.Domain),
 	})
 }
 

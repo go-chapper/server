@@ -20,9 +20,10 @@ command.
 
 -   Finish bridge
 -   Use null package (store/database)
--   Use logger
--   Use custom errors (auth)
+-   Make error ctx more robust / thought trough
 -   Use app
+-   Create invite template
+-   Rework room, server handlers / services (and more?)
 
 ## Ideas
 

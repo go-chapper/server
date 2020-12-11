@@ -5,55 +5,71 @@
 package services
 
 import (
-	"errors"
 	"time"
 
 	"chapper.dev/server/internal/config"
+	"chapper.dev/server/internal/log"
 	"chapper.dev/server/internal/models"
 	"chapper.dev/server/internal/modules/hash"
+	"chapper.dev/server/internal/services/errors"
 	"chapper.dev/server/internal/store"
+
+	"github.com/labstack/echo/v4"
 )
 
 var (
-	ErrMissingData = errors.New("invite-missing-data")
+	// DefaultExpireTimespan describes the default expire timespan of an invite
+	DefaultExpireTimespan = time.Hour * 24 * 7
+
+	// inviteCtx describes the invite log context
+	inviteCtx = log.NewContext("invite-srv")
 )
 
-// InviteService wrapps all dependencies of the invite service
+// InviteService provides a service to create, get and delete invites
 type InviteService struct {
 	store  *store.Store
 	config *config.Config
+	logger *log.Logger
 }
 
-// NewService returns a new invite service
-func NewInviteService(store *store.Store, config *config.Config) InviteService {
+// NewInviteService returns a new invite service
+func NewInviteService(store *store.Store, config *config.Config, logger *log.Logger) InviteService {
 	return InviteService{
 		store:  store,
 		config: config,
+		logger: logger,
 	}
 }
 
 // CreateInvite creates a new invite link
-func (s InviteService) CreateInvite(createdBy string, newInvite *models.CreateInvite) (*models.Invite, error) {
-	if newInvite.IsEmpty() {
-		return nil, ErrMissingData
-	}
+func (s InviteService) CreateInvite(username string, c echo.Context) (*models.Invite, error) {
+	var invite *models.Invite
 
-	var (
-		currentTime = time.Now()
-		hash        = hash.Adler32(newInvite.Server + currentTime.String())
-	)
-
-	invite := &models.Invite{
-		CreatedBy:  createdBy,
-		Hash:       hash,
-		Server:     newInvite.Server,
-		OneTimeUse: newInvite.OneTimeUse,
-		ExpiresAt:  newInvite.ExpiresAt,
-	}
-
-	err := s.store.CreateInvite(invite)
+	// Bind to invite model
+	err := c.Bind(invite)
 	if err != nil {
-		return nil, err
+		s.logger.Errorc(inviteCtx, err)
+		return nil, errors.ErrBindInvite
+	}
+
+	// Check if some data is missing
+	if invite.IsEmpty() {
+		s.logger.Infoc(inviteCtx, "some data to create an invite is missing")
+		return nil, errors.ErrMissingInviteData
+	}
+
+	// Get current time and set invite values
+	currentTime := time.Now()
+
+	invite.CreatedBy = username
+	invite.ExpiresAt = currentTime.Add(DefaultExpireTimespan)
+	invite.Hash = hash.Adler32(invite.Server + currentTime.String())
+
+	// Finally store the invite to the database
+	err = s.store.CreateInvite(invite)
+	if err != nil {
+		s.logger.Errorc(inviteCtx, err)
+		return nil, errors.ErrCreateInvite
 	}
 
 	return invite, nil

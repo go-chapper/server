@@ -79,7 +79,7 @@ func (r *Router) AddRoutes(handle *handlers.Handler) {
 	r.echo.Use(middleware.Static(webRoot))
 
 	// INVITE
-	r.echo.GET("/i/:invite", handle.Invite)
+	r.echo.GET("/i/:invite", handle.GetInvite)
 
 	// Phone home
 	r.echo.GET("/et", handle.Ping)

@@ -7,9 +7,8 @@ package handlers
 import (
 	"log"
 	"net/http"
-	"strings"
 
-	"chapper.dev/server/internal/models"
+	"chapper.dev/server/internal/services/errors"
 
 	"github.com/labstack/echo/v4"
 )
@@ -26,42 +25,18 @@ func (h *Handler) CreateRoom(c echo.Context) error {
 		})
 	}
 
-	room := new(models.Room)
-	err := c.Bind(room)
+	err := h.roomService.CreateRoom(c)
 	if err != nil {
-		log.Printf("WARNING [Router] Unable to bind to model: %v\n", err)
-		return c.JSON(http.StatusBadRequest, Map{
-			"error": ErrBind,
-		})
-	}
-
-	if room.IsEmpty() {
-		log.Println("WARNING [Router] Missing/empty data to create room")
-		return c.JSON(http.StatusBadRequest, Map{
-			"error": ErrEmptyData,
-		})
-	}
-
-	if room.Invalid() {
-		log.Println("WARNING [Router] Invalid data to create room")
-		return c.JSON(http.StatusBadRequest, Map{
-			"error": ErrInvalidData,
-		})
-	}
-
-	err = h.roomService.CreateRoom(room)
-	if err != nil {
-		log.Printf("ERROR [Router] Failed to create room: %v\n", err)
-
-		// TODO <2020/10/09>: Optimize this FOR SURE
-		if strings.HasPrefix(err.Error(), "Error 1062") {
-			return c.JSON(http.StatusBadRequest, Map{
-				"error": ErrRoomnameTaken,
+		if se, ok := err.(*errors.ServiceError); ok {
+			h.logger.Errorc(routerCtx, se)
+			return c.JSON(se.Code(), Map{
+				"error": se.Err(),
 			})
 		}
 
+		h.logger.Errorc(routerCtx, err)
 		return c.JSON(http.StatusInternalServerError, Map{
-			"error": ErrCreateRoom,
+			"error": ErrInternal,
 		})
 	}
 

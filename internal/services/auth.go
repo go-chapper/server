@@ -5,8 +5,6 @@
 package services
 
 import (
-	"net/http"
-
 	"chapper.dev/server/internal/config"
 	"chapper.dev/server/internal/log"
 	"chapper.dev/server/internal/models"
@@ -14,6 +12,7 @@ import (
 	"chapper.dev/server/internal/modules/hash"
 	"chapper.dev/server/internal/modules/jwt"
 	"chapper.dev/server/internal/modules/twofa"
+	"chapper.dev/server/internal/services/errors"
 	"chapper.dev/server/internal/store"
 	"chapper.dev/server/internal/utils"
 
@@ -21,16 +20,7 @@ import (
 )
 
 var (
-	ErrCreateVerifyToken = NewError("create-verify-token", "Failed to create 2fa verify token", http.StatusInternalServerError)
-	ErrUpdateVerifyToken = NewError("update-verify-token", "Failed to update 2fa verify token", http.StatusInternalServerError)
-	ErrMissingDataUser   = NewError("missing-data-user", "Some data to login/register is missing", http.StatusBadRequest)
-	ErrInvalidPassword   = NewError("invalid-password", "The user provided an invalid password", http.StatusUnauthorized)
-	ErrBindUser          = NewError("bind-user", "Tailed to bind the user model", http.StatusInternalServerError)
-	ErrCreateAvatar      = NewError("create-avatar", "Failed to create avatar", http.StatusInternalServerError)
-	ErrHashPassword      = NewError("hash-password", "Failed to hash password", http.StatusInternalServerError)
-	ErrSignToken         = NewError("sign-token", "Failed to sign jwt token", http.StatusInternalServerError)
-	ErrCreateUser        = NewError("create-user", "Failed to create user", http.StatusInternalServerError)
-	ErrGetUser           = NewError("get-user", "Failed to get user", http.StatusInternalServerError)
+	authCtx = log.NewContext("auth-srv")
 )
 
 // AuthService wraps authentication dependencies
@@ -58,37 +48,37 @@ func (s AuthService) Register(c echo.Context) error {
 	// Bind to signup user model
 	err := c.Bind(&user)
 	if err != nil {
-		s.logger.Error(err)
-		return ErrBindUser
+		s.logger.Errorc(authCtx, err)
+		return errors.ErrBindUser
 	}
 
 	// Check if some data is missing
 	if user.IsEmpty() {
-		s.logger.Info("Auth service: Some data to login/register is missing")
-		return ErrMissingDataUser
+		s.logger.Infoc(authCtx, "some data to login/register is missing")
+		return errors.ErrMissingUserData
 	}
 
 	// Hach the password to save into the database
 	hashedPassword, err := s.HashPassword(user.Password)
 	if err != nil {
-		s.logger.Error(err)
-		return ErrHashPassword
+		s.logger.Errorc(authCtx, err)
+		return errors.ErrHashPassword
 	}
 	user.Password = hashedPassword
 
 	// Insert new user into the database
 	err = s.store.CreateUser(user)
 	if err != nil {
-		s.logger.Error(err)
-		return ErrCreateUser
+		s.logger.Errorc(authCtx, err)
+		return errors.ErrCreateUser
 	}
 
 	// Generate the default profile avatar based on the username
 	profileAvatar := avatar.New(240, user.Username)
 	err = profileAvatar.Generate(s.config.Router.AvatarPath)
 	if err != nil {
-		s.logger.Error(err)
-		return ErrCreateAvatar
+		s.logger.Errorc(authCtx, err)
+		return errors.ErrCreateAvatar
 	}
 
 	return nil
@@ -101,35 +91,35 @@ func (s AuthService) Login(c echo.Context) (string, error) {
 	// Bind to user model
 	err := c.Bind(&user)
 	if err != nil {
-		s.logger.Error(err)
-		return "", ErrBindUser
+		s.logger.Errorc(authCtx, err)
+		return "", errors.ErrBindUser
 	}
 
 	// Check if some data is missing
 	if user.IsLoginEmpty() {
-		s.logger.Info("Auth service: Some data to login/register is missing")
-		return "", ErrMissingDataUser
+		s.logger.Infoc(authCtx, "some data to login/register is missing")
+		return "", errors.ErrMissingUserData
 	}
 
 	// Get the account from the database by username
 	account, err := s.store.GetUser(user.Username)
 	if err != nil {
-		s.logger.Error(err)
-		return "", ErrGetUser
+		s.logger.Errorc(authCtx, err)
+		return "", errors.ErrGetUser
 	}
 
 	// Check if the account uses 2FA
 	if account.UsesTwoFA() {
 		verifyToken, err := s.GenerateVerifyToken()
 		if err != nil {
-			s.logger.Error(err)
-			return "", ErrCreateVerifyToken
+			s.logger.Errorc(authCtx, err)
+			return "", errors.ErrCreateVerifyToken
 		}
 
 		err = s.store.UpdateTwoFAVerify(account.Username, verifyToken)
 		if err != nil {
-			s.logger.Error(err)
-			return "", ErrUpdateVerifyToken
+			s.logger.Errorc(authCtx, err)
+			return "", errors.ErrUpdateVerifyToken
 		}
 
 		return "", nil
@@ -138,8 +128,8 @@ func (s AuthService) Login(c echo.Context) (string, error) {
 	// Compare the provided with the saved password
 	valid, err := s.ComparePassword(user.Password, account.Password)
 	if !valid || err != nil {
-		s.logger.Error(err)
-		return "", ErrInvalidPassword
+		s.logger.Errorc(authCtx, err)
+		return "", errors.ErrInvalidPassword
 	}
 
 	// Generate a new JWT token
@@ -149,8 +139,8 @@ func (s AuthService) Login(c echo.Context) (string, error) {
 
 	signedToken, err := token.Sign()
 	if err != nil {
-		s.logger.Error(err)
-		return "", ErrSignToken
+		s.logger.Errorc(authCtx, err)
+		return "", errors.ErrSignToken
 	}
 
 	return signedToken, nil
