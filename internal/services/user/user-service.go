@@ -8,7 +8,6 @@ package user
 import (
 	"chapper.dev/server/internal/config"
 	"chapper.dev/server/internal/models"
-	"chapper.dev/server/internal/models/joins"
 	"chapper.dev/server/internal/modules/avatar"
 	"chapper.dev/server/internal/store"
 )
@@ -39,7 +38,7 @@ func (s Service) GetUserPublicKey(username string) (string, error) {
 
 // CreateUser creates a new 'user' or returns an error if the new user could not be
 // created
-func (s Service) CreateUser(user *models.SignupUser) error {
+func (s Service) CreateUser(user models.SignupUser) error {
 	// TODO <2020/10/09>: Can we optimize/improve this?
 	// settings, err := s.store.GetSettings()
 	// if err != nil {
@@ -69,10 +68,6 @@ func (s Service) CreateUser(user *models.SignupUser) error {
 
 func (s Service) UpdateTwoFAVerify(username, verify string) error {
 	return s.store.UpdateTwoFAVerify(username, verify)
-}
-
-func (s Service) GetUserServers(username string) ([]joins.UserServers, error) {
-	return s.store.GetUserServers(username)
 }
 
 func (s Service) PutUserServer(username string) ([]models.Server, error) {

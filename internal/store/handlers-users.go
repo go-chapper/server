@@ -7,7 +7,6 @@ package store
 
 import (
 	"chapper.dev/server/internal/models"
-	"chapper.dev/server/internal/models/joins"
 )
 
 func (s *Store) GetUser(username string) (models.User, error) {
@@ -33,13 +32,12 @@ func (s *Store) GetUserPublicKey(username string) (string, error) {
 	return publicKey, err
 }
 
-func (s *Store) GetUserServers(username string) ([]joins.UserServers, error) {
-	servers := []joins.UserServers{}
+func (s *Store) GetUserServers(username string) error {
 	// TODO <2020/10/12>: re-implement
-	return servers, nil
+	return nil
 }
 
-func (s *Store) CreateUser(user *models.SignupUser) error {
+func (s *Store) CreateUser(user models.SignupUser) error {
 	_, err := s.conn.Exec(`
 		INSERT INTO users
 		(username, password, email, publickey)

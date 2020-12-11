@@ -7,11 +7,11 @@ package cmd
 
 import (
 	"fmt"
-	"log"
+	"os"
 
 	"chapper.dev/server/internal/config"
 	"chapper.dev/server/internal/constants"
-	"chapper.dev/server/internal/logger"
+	"chapper.dev/server/internal/log"
 	"chapper.dev/server/internal/router"
 	"chapper.dev/server/internal/router/handlers"
 	"chapper.dev/server/internal/store"
@@ -33,23 +33,26 @@ var runCmd = &cobra.Command{
 		c := config.New()
 		err := c.Read(configFilePath)
 		if err != nil {
-			fmt.Printf("ERROR [Config] Could not read config file: %s\n", err.Error())
+			fmt.Printf("[E] config: could not read config file: %v\n", err)
+			os.Exit(1)
 		}
 
-		f, err := logger.New(c.Log)
+		logger, err := log.New(c.Log)
 		if err != nil {
-			fmt.Printf("ERROR [Logger] Failed to open log file: %s\n", err.Error())
+			fmt.Printf("[E] logger: failed to setup logger: %v\n", err)
+			os.Exit(1)
 		}
-		defer f.Close()
 
 		s, err := store.New("mysql", c.Store)
 		if err != nil {
-			log.Fatalf("ERROR [Store] Failed to connect to store: %v\n", err)
+			e := fmt.Errorf("store: failed to connect to database: %v", err)
+			logger.Fatal(e)
 		}
 
 		err = s.Migrate()
 		if err != nil {
-			log.Fatalf("ERROR [Store] Failed to migrate: %v\n", err)
+			e := fmt.Errorf("store: failed to migrate table(s): %v", err)
+			logger.Fatal(e)
 		}
 
 		r := router.New(c)
@@ -58,17 +61,20 @@ var runCmd = &cobra.Command{
 
 		t, err := turn.New(c.Turn.PublicIP, c.Router.Domain, "udp4", c.Turn.Port)
 		if err != nil {
-			log.Fatalf("ERROR [Turn] Failed to init TURN server: %v\n", err)
+			e := fmt.Errorf("turn: failed to init server: %v", err)
+			logger.Fatal(e)
 		}
 
 		err = t.Run()
 		if err != nil {
-			log.Fatalf("ERROR [Turn] Failed to start TURN server: %v\n", err)
+			e := fmt.Errorf("turn: failed to start server: %v", err)
+			logger.Fatal(e)
 		}
 
 		err = r.Run()
 		if err != nil {
-			log.Fatalf("ERROR [Router] Failed to start the router: %v\n", err)
+			e := fmt.Errorf("router: failed to start router: %v", err)
+			logger.Fatal(e)
 		}
 	},
 }

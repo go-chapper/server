@@ -91,7 +91,7 @@ func (r *Router) AddRoutes(handle *handlers.Handler) {
 
 	// JWT middleware setup
 	jwtware := middleware.JWTWithConfig(middleware.JWTConfig{
-		SigningKey: []byte(r.config.Router.JWTSigningKey),
+		SigningKey: []byte(r.config.Router.JWTSecret),
 		Claims:     &jwt.Claims{},
 	})
 
@@ -105,9 +105,9 @@ func (r *Router) AddRoutes(handle *handlers.Handler) {
 	key.GET("/:username", handle.GetKey, jwtware)
 
 	// SIGNALING
-	signaling := r.echo.Group("/signaling")
-	signaling.GET("/token", handle.GetSignalingToken, jwtware)
-	signaling.GET("/ws", handle.GetSignalingChannel)
+	// signaling := r.echo.Group("/signaling")
+	// signaling.GET("/token", handle.GetSignalingToken, jwtware)
+	// signaling.GET("/ws", handle.GetSignalingChannel)
 
 	// MESSAGING
 	messaging := r.echo.Group("/messaging")

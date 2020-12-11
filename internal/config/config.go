@@ -44,13 +44,13 @@ type StoreOptions struct {
 }
 
 type RouterOptions struct {
-	Port          int    `toml:"PORT"`
-	Domain        string `toml:"DOMAIN"`
-	WebPath       string `toml:"WEB_PATH"`
-	AvatarPath    string `toml:"AVATAR_PATH"`
-	JWTSigningKey string `toml:"JWT_SIGNING_KEY"`
-	OTPIssuer     string `toml:"OTP_ISSUER"`
-	EnableGZIP    bool   `toml:"ENABLE_GZIP"`
+	Port       int    `toml:"PORT"`
+	Domain     string `toml:"DOMAIN"`
+	WebPath    string `toml:"WEB_PATH"`
+	AvatarPath string `toml:"AVATAR_PATH"`
+	JWTSecret  string `toml:"JWT_SIGNING_KEY"`
+	OTPIssuer  string `toml:"OTP_ISSUER"`
+	EnableGZIP bool   `toml:"ENABLE_GZIP"`
 }
 
 type GeneralOptions struct {
@@ -80,13 +80,13 @@ func NewDefault() *Config {
 				Port:     3306,
 			},
 			Router: RouterOptions{
-				Port:          8080,
-				Domain:        "",
-				WebPath:       "/var/www/chapper/app",
-				AvatarPath:    "/var/www/chapper/avatar",
-				JWTSigningKey: "",
-				OTPIssuer:     "Chapper",
-				EnableGZIP:    true,
+				Port:       8080,
+				Domain:     "",
+				WebPath:    "/var/www/chapper/app",
+				AvatarPath: "/var/www/chapper/avatar",
+				JWTSecret:  "",
+				OTPIssuer:  "Chapper",
+				EnableGZIP: true,
 			},
 			General: GeneralOptions{
 				Name:           "Chapper",
@@ -109,13 +109,13 @@ func NewDefault() *Config {
 			Port:     3306,
 		},
 		Router: RouterOptions{
-			Port:          8080,
-			Domain:        "",
-			WebPath:       "",
-			AvatarPath:    "",
-			JWTSigningKey: "",
-			OTPIssuer:     "Chapper",
-			EnableGZIP:    true,
+			Port:       8080,
+			Domain:     "",
+			WebPath:    "",
+			AvatarPath: "",
+			JWTSecret:  "",
+			OTPIssuer:  "Chapper",
+			EnableGZIP: true,
 		},
 		General: GeneralOptions{
 			Name:           "Chapper",
@@ -158,14 +158,14 @@ func (c *Config) Write(path string) error {
 
 // Validate validates the config
 func (c *Config) Validate() error {
-	if c.Router.JWTSigningKey == "" {
+	if c.Router.JWTSecret == "" {
 		// TODO: Use logging
 		fmt.Println("WARNING [Config] JWT_SIGNING_KEY cannot be empty. Fallback to generated one")
 		key, err := utils.RandomCryptoString(32)
 		if err != nil {
 			return err
 		}
-		c.Router.JWTSigningKey = key
+		c.Router.JWTSecret = key
 	}
 
 	if c.Router.OTPIssuer == "" {

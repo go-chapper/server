@@ -26,7 +26,7 @@ type SignupUser struct {
 	Username  string `json:"username"`
 	Password  string `json:"password"`
 	Email     string `json:"email"`
-	PublicKey string `json:"publicKey"`
+	PublicKey string `json:"publickey"`
 }
 
 // Role specifies a role which is used for rights management

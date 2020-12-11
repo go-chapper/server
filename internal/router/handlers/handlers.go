@@ -83,7 +83,7 @@ func New(store *store.Store, config *config.Config) *Handler {
 	us := user.NewService(store, *config)
 	ss := server.NewService(store)
 	rs := room.NewService(store)
-	as := auth.NewService()
+	as := auth.NewService(store, config)
 	cs := call.NewService()
 
 	// signalingHub := broadcast.NewSignalingHub()

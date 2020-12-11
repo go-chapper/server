@@ -19,8 +19,9 @@ command.
 ## TODOs
 
 -   Finish bridge
--   Clean up database queries (just SQL)
--   Use null package
+-   Use null package (store/database)
+-   Use logger
+-   Use custom errors (auth)
 
 ## Ideas
 

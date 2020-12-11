@@ -38,6 +38,7 @@ require (
 	github.com/pion/transport v0.12.0 // indirect
 	github.com/pion/turn/v2 v2.0.5
 	github.com/pion/webrtc/v2 v2.2.26
+	github.com/pkg/errors v0.9.1
 	github.com/pquerna/otp v1.3.0
 	github.com/spf13/cobra v1.1.1
 	golang.org/x/crypto v0.0.0-20201208171446-5f87f3452ae9

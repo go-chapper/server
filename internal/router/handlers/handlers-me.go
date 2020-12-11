@@ -14,19 +14,20 @@ import (
 
 // GetUserServers returns all servers the user is a member of
 func (h *Handler) GetUserServers(c echo.Context) error {
-	claims := getClaimes(c)
+	// claims := getClaimes(c)
 
-	servers, err := h.userService.GetUserServers(claims.Username)
-	if err != nil {
-		log.Printf("ERROR [Router] Failed to get servers: %v\n", err)
-		return c.JSON(http.StatusInternalServerError, Map{
-			"error": ErrInternal,
-		})
-	}
+	// servers, err := h.userService.GetUserServers(claims.Username)
+	// if err != nil {
+	// 	log.Printf("ERROR [Router] Failed to get servers: %v\n", err)
+	// 	return c.JSON(http.StatusInternalServerError, Map{
+	// 		"error": ErrInternal,
+	// 	})
+	// }
 
-	return c.JSON(http.StatusOK, Map{
-		"servers": servers,
-	})
+	// return c.JSON(http.StatusOK, Map{
+	// 	"servers": servers,
+	// })
+	return nil
 }
 
 // PutUserServer adds one new server to the users list of servers he is a member of

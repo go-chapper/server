@@ -5,42 +5,35 @@
 // Package handlers provides HTTP handlers
 package handlers
 
-import (
-	"log"
-	"net/http"
-
-	"github.com/labstack/echo/v4"
-)
-
 // GetSignalingChannel opens a websocket used for signaling
-func (h *Handler) GetSignalingChannel(c echo.Context) error {
-	conn, err := h.signalingHub.CreateConnection(c.Response(), c.Request())
-	if err != nil {
-		log.Printf("ERROR [Router] Failed to upgrade connection: %v\n", err)
-		return err
-	}
+// func (h *Handler) GetSignalingChannel(c echo.Context) error {
+// 	conn, err := h.signalingHub.CreateConnection(c.Response(), c.Request())
+// 	if err != nil {
+// 		log.Printf("ERROR [Router] Failed to upgrade connection: %v\n", err)
+// 		return err
+// 	}
 
-	go h.signalingHub.Register(conn)
-	go conn.ListenRead()
-	go conn.ListenWrite()
+// 	go h.signalingHub.Register(conn)
+// 	go conn.ListenRead()
+// 	go conn.ListenWrite()
 
-	return nil
-}
+// 	return nil
+// }
 
-// GetSignalingToken returns an auth token to subscribe to the signaling websocket
-func (h *Handler) GetSignalingToken(c echo.Context) error {
-	claims := getClaimes(c)
+// // GetSignalingToken returns an auth token to subscribe to the signaling websocket
+// func (h *Handler) GetSignalingToken(c echo.Context) error {
+// 	claims := getClaimes(c)
 
-	// TODO <2020/13/09>: Add check if callee is blocked and/or the caller is blocked by callee
+// 	// TODO <2020/13/09>: Add check if callee is blocked and/or the caller is blocked by callee
 
-	t, err := h.signalingHub.Token(claims.Username)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, Map{
-			"error": ErrInternal,
-		})
-	}
+// 	t, err := h.signalingHub.Token(claims.Username)
+// 	if err != nil {
+// 		return c.JSON(http.StatusInternalServerError, Map{
+// 			"error": ErrInternal,
+// 		})
+// 	}
 
-	return c.JSON(http.StatusOK, Map{
-		"token": t,
-	})
-}
+// 	return c.JSON(http.StatusOK, Map{
+// 		"token": t,
+// 	})
+// }
