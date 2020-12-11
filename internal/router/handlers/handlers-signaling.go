@@ -2,7 +2,6 @@
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 
-// Package handlers provides HTTP handlers
 package handlers
 
 // GetSignalingChannel opens a websocket used for signaling

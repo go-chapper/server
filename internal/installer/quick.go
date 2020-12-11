@@ -2,7 +2,6 @@
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 
-// Package installer provides utilities for installing a Chapper instance
 package installer
 
 import "github.com/AlecAivazis/survey/v2"
