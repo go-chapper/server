@@ -5,32 +5,68 @@
 package services
 
 import (
+	"chapper.dev/server/internal/log"
 	"chapper.dev/server/internal/models"
 	"chapper.dev/server/internal/modules/hash"
+	"chapper.dev/server/internal/services/errors"
 	"chapper.dev/server/internal/store"
+
+	"github.com/labstack/echo/v4"
 )
+
+var serverCtx = log.NewContext("server-srv")
 
 // ServerService wraps dependencies
 type ServerService struct {
-	store *store.Store
+	store  *store.Store
+	logger *log.Logger
 }
 
 // NewServerService returns a new server service
-func NewServerService(store *store.Store) ServerService {
+func NewServerService(store *store.Store, logger *log.Logger) ServerService {
 	return ServerService{
-		store: store,
+		store:  store,
+		logger: logger,
 	}
 }
 
 // CreateServer creates a new virtual server
-func (s ServerService) CreateServer(server *models.Server) error {
-	server.Hash = hash.Adler32(server.Name)
-	return s.store.CreateServer(server)
+func (s ServerService) CreateServer(c echo.Context) error {
+	var server *models.Server
+
+	err := c.Bind(server)
+	if err != nil {
+		s.logger.Errorc(serverCtx, err)
+		return errors.ErrBindServer
+	}
+
+	if server.IsEmpty() {
+		s.logger.Infoc(serverCtx, "data missing to create server")
+		return errors.ErrMissingServerData
+	}
+
+	serverHash := hash.FNV64(server.Name)
+	server.Hash = serverHash
+
+	err = s.store.CreateServer(server)
+	if err != nil {
+		s.logger.Errorc(serverCtx, err)
+		return errors.ErrCreateServer
+	}
+
+	return nil
 }
 
 // GetServer returns one virtual server identified by 'hash'
-func (s ServerService) GetServer(hash string) (models.Server, error) {
-	return s.store.GetServer(hash)
+func (s ServerService) GetServer(c echo.Context) (*models.Server, error) {
+	serverHash := c.Param("server-hash")
+
+	if serverHash == "" {
+		s.logger.Infoc(serverCtx, "invalid server hash")
+		return nil, errors.ErrInvalidHash
+	}
+
+	return s.store.GetServer(serverHash)
 }
 
 // GetServers returns all virtual servers

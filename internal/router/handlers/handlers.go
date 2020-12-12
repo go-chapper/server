@@ -6,10 +6,13 @@
 package handlers
 
 import (
+	"net/http"
+
 	"chapper.dev/server/internal/config"
 	"chapper.dev/server/internal/log"
 	"chapper.dev/server/internal/modules/jwt"
 	"chapper.dev/server/internal/services"
+	"chapper.dev/server/internal/services/errors"
 	"chapper.dev/server/internal/store"
 
 	j "github.com/dgrijalva/jwt-go"
@@ -20,34 +23,8 @@ import (
 type ErrorCode string
 
 const (
-	ErrInternal        ErrorCode = "internal-error"
-	ErrBind            ErrorCode = "bind-error"
-	ErrGetUser         ErrorCode = "get-user-error"
-	ErrHashPassword    ErrorCode = "hash-error"
-	ErrUsernameTaken   ErrorCode = "username-taken"
-	ErrUnauthorized    ErrorCode = "unauthorized"
-	ErrTwoFA           ErrorCode = "2fa-error"
-	ErrJWT             ErrorCode = "jwt-error"
-	ErrJWTExpired      ErrorCode = "jwt-expired"
-	ErrServernameTaken ErrorCode = "servername-taken"
-	ErrCreateServer    ErrorCode = "create-server-error"
-	ErrServerNotFound  ErrorCode = "server-not-found"
-	ErrRoomnameTaken   ErrorCode = "roomname-taken"
-	ErrCreateRoom      ErrorCode = "create-room-error"
-	ErrRoomNotFound    ErrorCode = "room-not-found"
-	ErrCreateInvite    ErrorCode = "create-invite-error"
-	ErrCreateWebsocket ErrorCode = "create-websocket-error"
-)
-
-type StatusCode string
-
-const (
-	StatusRegistered    StatusCode = "registered"
-	StatusServerCreated StatusCode = "server-created"
-	StatusRoomCreated   StatusCode = "room-created"
-	StatusServerDeleted StatusCode = "server-deleted"
-	StatusRoomDeleted   StatusCode = "room-deleted"
-	StatusJWTRefreshed  StatusCode = "jwt-refreshed"
+	ErrInternal     ErrorCode = "internal-error"
+	ErrUnauthorized ErrorCode = "unauthorized"
 )
 
 var routerCtx = log.NewContext("router")
@@ -74,9 +51,9 @@ func New(store *store.Store, config *config.Config, logger *log.Logger) *Handler
 	// Create services
 	is := services.NewInviteService(store, config, logger)
 	as := services.NewAuthService(store, config, logger)
+	ss := services.NewServerService(store, logger)
 	us := services.NewUserService(store, config)
 	rs := services.NewRoomService(store, logger)
-	ss := services.NewServerService(store)
 	cs := services.NewCallService()
 
 	// signalingHub := broadcast.NewSignalingHub()
@@ -94,6 +71,20 @@ func New(store *store.Store, config *config.Config, logger *log.Logger) *Handler
 		roomService:   rs,
 		callService:   cs,
 	}
+}
+
+func (h *Handler) handleError(err error, c echo.Context) error {
+	if se, ok := err.(*errors.ServiceError); ok {
+		h.logger.Errorc(routerCtx, se)
+		return c.JSON(se.Code(), Map{
+			"error": se.Err(),
+		})
+	}
+
+	h.logger.Errorc(routerCtx, err)
+	return c.JSON(http.StatusInternalServerError, Map{
+		"error": ErrInternal,
+	})
 }
 
 // RunHubs runs the different broadcasting hubs

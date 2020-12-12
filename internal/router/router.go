@@ -128,12 +128,12 @@ func (r *Router) AddRoutes(handle *handlers.Handler) {
 	profile.GET("/:username", handle.GetProfile)
 
 	// VIRTUAL SERVERS
-	// server := v1.Group("/servers")
-	// server.DELETE("/:server-hash", handle.DeleteServer)
-	// server.POST("/:server-hash", handle.UpdateServer)
-	// server.GET("/:server-hash", handle.GetServer)
-	// server.PUT("", handle.CreateServer)
-	// server.GET("", handle.GetServers)
+	server := v1.Group("/servers")
+	server.DELETE("/:server-hash", handle.DeleteServer)
+	server.POST("/:server-hash", handle.UpdateServer)
+	server.GET("/:server-hash", handle.GetServer)
+	server.PUT("", handle.CreateServer)
+	server.GET("", handle.GetServers)
 
 	// ROOMS
 	rooms := v1.Group("/rooms")

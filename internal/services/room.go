@@ -64,7 +64,7 @@ func (s RoomService) GetRoom(c echo.Context) (*models.Room, error) {
 
 	if roomHash == "" {
 		s.logger.Infoc(roomCtx, "invalid room hash")
-		return nil, errors.ErrInvalidRoomHash
+		return nil, errors.ErrInvalidHash
 	}
 
 	return s.store.GetRoom(roomHash)

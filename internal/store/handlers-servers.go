@@ -23,9 +23,9 @@ func (s *Store) CreateServer(server *models.Server) error {
 }
 
 // GetServer selects ONE server entry with provided 'serverHash' from the database
-func (s *Store) GetServer(serverHash string) (models.Server, error) {
-	var server models.Server
-	err := s.conn.Get(&server,
+func (s *Store) GetServer(serverHash string) (*models.Server, error) {
+	var server *models.Server
+	err := s.conn.Get(server,
 		`SELECT hash, name, description, image
 		FROM servers
 		WHERE hash = ?`,

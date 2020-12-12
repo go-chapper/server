@@ -12,9 +12,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// CreateRoom creates a room
-// NOTE(Techassi): This silently fails if we try to create a room with the same name/hash
-// but doesn't create a new one. Sooooo... Success I guess
+// CreateRoom handles incoming requests to create a room
 func (h *Handler) CreateRoom(c echo.Context) error {
 	claims := getClaimes(c)
 
@@ -40,11 +38,11 @@ func (h *Handler) CreateRoom(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, Map{
-		"status": StatusRoomCreated,
+		"status": "created",
 	})
 }
 
-// GetRoom returns a room identified by its name
+// GetRoom handles incoming requests to get one room
 func (h *Handler) GetRoom(c echo.Context) error {
 	room, err := h.roomService.GetRoom(c)
 	if err != nil {
@@ -66,7 +64,7 @@ func (h *Handler) GetRoom(c echo.Context) error {
 	})
 }
 
-// GetRooms returns a list of rooms
+// GetRooms handles incoming requests to get multiple rooms
 func (h *Handler) GetRooms(c echo.Context) error {
 	rooms, err := h.roomService.GetRooms()
 	if err != nil {
@@ -88,12 +86,29 @@ func (h *Handler) GetRooms(c echo.Context) error {
 	})
 }
 
-// UpdateRoom updates a room
+// UpdateRoom handles incoming requests to update one room
 func (h *Handler) UpdateRoom(c echo.Context) error {
-	return nil
+	err := h.roomService.UpdateRoom(c)
+	if err != nil {
+		if se, ok := err.(*errors.ServiceError); ok {
+			h.logger.Errorc(routerCtx, se)
+			return c.JSON(se.Code(), Map{
+				"error": se.Err(),
+			})
+		}
+
+		h.logger.Errorc(routerCtx, err)
+		return c.JSON(http.StatusInternalServerError, Map{
+			"error": ErrInternal,
+		})
+	}
+
+	return c.JSON(http.StatusOK, Map{
+		"status": "updated",
+	})
 }
 
-// DeleteRoom deletes a room identified by it's name
+// DeleteRoom handles incoming requests to delete one room
 func (h *Handler) DeleteRoom(c echo.Context) error {
 	claims := getClaimes(c)
 
@@ -119,6 +134,6 @@ func (h *Handler) DeleteRoom(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, Map{
-		"status": StatusRoomDeleted,
+		"status": "deleted",
 	})
 }

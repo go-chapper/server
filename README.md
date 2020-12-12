@@ -20,10 +20,11 @@ command.
 
 -   Finish bridge
 -   Use null package (store/database)
--   Make error ctx more robust / thought trough
--   Use app
+-   Make error ctx more robust/thought trough
 -   Create invite template
--   Rework room, server handlers / services (and more?)
+-   Rework server handlers/services (and more?)
+-   Rework TURN New function
+-   Handle signals gracefully
 
 ## Ideas
 

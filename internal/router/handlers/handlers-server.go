@@ -7,14 +7,11 @@ package handlers
 import (
 	"log"
 	"net/http"
-	"strings"
-
-	"chapper.dev/server/internal/models"
 
 	"github.com/labstack/echo/v4"
 )
 
-// CreateServer creates a server
+// CreateServer handles incoming requests
 func (h *Handler) CreateServer(c echo.Context) error {
 	claims := getClaimes(c)
 
@@ -24,51 +21,21 @@ func (h *Handler) CreateServer(c echo.Context) error {
 		})
 	}
 
-	server := new(models.Server)
-	err := c.Bind(server)
+	err := h.serverService.CreateServer(c)
 	if err != nil {
-		log.Printf("WARNING [Router] Unable to bind to model: %v\n", err)
-		return c.JSON(http.StatusBadRequest, Map{
-			"error": ErrBind,
-		})
-	}
-
-	if server.IsEmpty() {
-		log.Println("WARNING [Router] Missing/empty data to create server")
-		return c.JSON(http.StatusBadRequest, Map{
-			"error": ErrEmptyData,
-		})
-	}
-
-	err = h.serverService.CreateServer(server)
-	if err != nil {
-		log.Printf("ERROR [Router] Failed to create server: %v\n", err)
-
-		// TODO <2020/10/09>: Optimize this FOR SURE
-		if strings.HasPrefix(err.Error(), "Error 1062") {
-			return c.JSON(http.StatusBadRequest, Map{
-				"error": ErrServernameTaken,
-			})
-		}
-
-		return c.JSON(http.StatusInternalServerError, Map{
-			"error": ErrCreateServer,
-		})
+		h.handleError(err, c)
 	}
 
 	return c.JSON(http.StatusOK, Map{
-		"status": StatusServerCreated,
+		"status": "created",
 	})
 }
 
 // GetServer returns a server identified by it's hash
 func (h *Handler) GetServer(c echo.Context) error {
-	server, err := h.serverService.GetServer(c.Param("server-hash"))
+	server, err := h.serverService.GetServer(c)
 	if err != nil {
-		log.Printf("ERROR [Router] Failed to get server: %v\n", err)
-		return c.JSON(http.StatusInternalServerError, Map{
-			"error": ErrInternal,
-		})
+		h.handleError(err, c)
 	}
 
 	return c.JSON(http.StatusOK, Map{
@@ -88,10 +55,7 @@ func (h *Handler) GetServers(c echo.Context) error {
 
 	servers, err := h.serverService.GetServers()
 	if err != nil {
-		log.Printf("ERROR [Router] Failed to get servers: %v\n", err)
-		return c.JSON(http.StatusInternalServerError, Map{
-			"error": ErrInternal,
-		})
+		h.handleError(err, c)
 	}
 
 	return c.JSON(http.StatusOK, Map{
