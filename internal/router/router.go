@@ -6,18 +6,20 @@
 package router
 
 import (
+	"context"
 	"fmt"
-	"log"
 
 	"chapper.dev/server/internal/config"
+	"chapper.dev/server/internal/log"
 	"chapper.dev/server/internal/modules/jwt"
 	"chapper.dev/server/internal/router/handlers"
 	"chapper.dev/server/internal/utils"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	l "github.com/labstack/gommon/log"
 )
+
+var routerCtx = log.NewContext("router")
 
 // Router is the top-level router instance wrapping it's dependencies
 // TODO <2020/12/09>: Think about a better way to pass in the broadcatser hub
@@ -25,17 +27,15 @@ type Router struct {
 	config  *config.Config
 	echo    *echo.Echo
 	handler *handlers.Handler
+	logger  *log.Logger
 }
 
 // New creates a new router instance and returns it
-func New(c *config.Config) *Router {
+func New(c *config.Config, l *log.Logger) *Router {
 	e := echo.New()
 
 	// Set debug mode (only for development)
 	e.Debug = false
-
-	// Set log level
-	e.Logger.SetLevel(l.ERROR)
 
 	// Hide startup message
 	e.HideBanner = true
@@ -62,6 +62,7 @@ func New(c *config.Config) *Router {
 	return &Router{
 		config: c,
 		echo:   e,
+		logger: l,
 	}
 }
 
@@ -70,7 +71,7 @@ func (r *Router) AddRoutes(handle *handlers.Handler) {
 	// TODO: Move this to config validation / default values
 	webRoot, err := utils.Abs(r.config.Router.WebPath)
 	if err != nil {
-		log.Panicln(err)
+		// log.Panicln(err)
 	}
 	r.config.Router.WebPath = webRoot
 
@@ -168,7 +169,23 @@ func (r *Router) AddRoutes(handle *handlers.Handler) {
 }
 
 // Run starts the HTTP Server or returns an error
-func (r *Router) Run() error {
-	r.handler.RunHubs()
-	return r.echo.Start(fmt.Sprintf(":%d", r.config.Router.Port))
+func (r *Router) Run() {
+	// r.handler.RunHubs()
+
+	port := fmt.Sprintf(":%d", r.config.Router.Port)
+	go func() {
+		err := r.echo.Start(port)
+		if err != nil {
+			r.logger.Infoc(routerCtx, err.Error())
+		}
+	}()
+}
+
+// Stop gracefully stops the router
+func (r *Router) Stop(ctx context.Context) error {
+	err := r.echo.Shutdown(ctx)
+	if err != nil {
+		r.logger.Infoc(routerCtx, err.Error())
+	}
+	return err
 }

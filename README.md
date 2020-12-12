@@ -19,12 +19,10 @@ command.
 ## TODOs
 
 -   Finish bridge
--   Use null package (store/database)
--   Make error ctx more robust/thought trough
+-   Make log ctx more robust/thought trough
 -   Create invite template
 -   Rework server handlers/services (and more?)
 -   Rework TURN New function
--   Handle signals gracefully
 
 ## Ideas
 

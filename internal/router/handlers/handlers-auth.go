@@ -17,13 +17,13 @@ func (h *Handler) AuthRegister(c echo.Context) error {
 	err := h.authService.Register(c)
 	if err != nil {
 		if se, ok := err.(*errors.ServiceError); ok {
-			h.logger.Errorc(routerCtx, se)
+			h.logger.Errorc(handlerCtx, se)
 			return c.JSON(se.Code(), Map{
 				"error": se.Err(),
 			})
 		}
 
-		h.logger.Errorc(routerCtx, err)
+		h.logger.Errorc(handlerCtx, err)
 		return c.JSON(http.StatusInternalServerError, Map{
 			"error": ErrInternal,
 		})
@@ -44,13 +44,13 @@ func (h *Handler) AuthLogin(c echo.Context) error {
 	token, err := h.authService.Login(c)
 	if err != nil {
 		if se, ok := err.(*errors.ServiceError); ok {
-			h.logger.Errorc(routerCtx, se)
+			h.logger.Errorc(handlerCtx, se)
 			return c.JSON(se.Code(), Map{
 				"error": se.Err(),
 			})
 		}
 
-		h.logger.Errorc(routerCtx, err)
+		h.logger.Errorc(handlerCtx, err)
 		return c.JSON(http.StatusInternalServerError, Map{
 			"error": ErrInternal,
 		})

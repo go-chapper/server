@@ -25,13 +25,13 @@ func (h *Handler) CreateRoom(c echo.Context) error {
 	err := h.roomService.CreateRoom(c)
 	if err != nil {
 		if se, ok := err.(*errors.ServiceError); ok {
-			h.logger.Errorc(routerCtx, se)
+			h.logger.Errorc(handlerCtx, se)
 			return c.JSON(se.Code(), Map{
 				"error": se.Err(),
 			})
 		}
 
-		h.logger.Errorc(routerCtx, err)
+		h.logger.Errorc(handlerCtx, err)
 		return c.JSON(http.StatusInternalServerError, Map{
 			"error": ErrInternal,
 		})
@@ -47,13 +47,13 @@ func (h *Handler) GetRoom(c echo.Context) error {
 	room, err := h.roomService.GetRoom(c)
 	if err != nil {
 		if se, ok := err.(*errors.ServiceError); ok {
-			h.logger.Errorc(routerCtx, se)
+			h.logger.Errorc(handlerCtx, se)
 			return c.JSON(se.Code(), Map{
 				"error": se.Err(),
 			})
 		}
 
-		h.logger.Errorc(routerCtx, err)
+		h.logger.Errorc(handlerCtx, err)
 		return c.JSON(http.StatusInternalServerError, Map{
 			"error": ErrInternal,
 		})
@@ -69,13 +69,13 @@ func (h *Handler) GetRooms(c echo.Context) error {
 	rooms, err := h.roomService.GetRooms()
 	if err != nil {
 		if se, ok := err.(*errors.ServiceError); ok {
-			h.logger.Errorc(routerCtx, se)
+			h.logger.Errorc(handlerCtx, se)
 			return c.JSON(se.Code(), Map{
 				"error": se.Err(),
 			})
 		}
 
-		h.logger.Errorc(routerCtx, err)
+		h.logger.Errorc(handlerCtx, err)
 		return c.JSON(http.StatusInternalServerError, Map{
 			"error": ErrInternal,
 		})
@@ -91,13 +91,13 @@ func (h *Handler) UpdateRoom(c echo.Context) error {
 	err := h.roomService.UpdateRoom(c)
 	if err != nil {
 		if se, ok := err.(*errors.ServiceError); ok {
-			h.logger.Errorc(routerCtx, se)
+			h.logger.Errorc(handlerCtx, se)
 			return c.JSON(se.Code(), Map{
 				"error": se.Err(),
 			})
 		}
 
-		h.logger.Errorc(routerCtx, err)
+		h.logger.Errorc(handlerCtx, err)
 		return c.JSON(http.StatusInternalServerError, Map{
 			"error": ErrInternal,
 		})
@@ -121,13 +121,13 @@ func (h *Handler) DeleteRoom(c echo.Context) error {
 	err := h.roomService.DeleteRoom(c)
 	if err != nil {
 		if se, ok := err.(*errors.ServiceError); ok {
-			h.logger.Errorc(routerCtx, se)
+			h.logger.Errorc(handlerCtx, se)
 			return c.JSON(se.Code(), Map{
 				"error": se.Err(),
 			})
 		}
 
-		h.logger.Errorc(routerCtx, err)
+		h.logger.Errorc(handlerCtx, err)
 		return c.JSON(http.StatusInternalServerError, Map{
 			"error": ErrInternal,
 		})

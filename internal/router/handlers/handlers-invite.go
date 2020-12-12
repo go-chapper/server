@@ -30,13 +30,13 @@ func (h *Handler) CreateInvite(c echo.Context) error {
 	invite, err := h.inviteService.CreateInvite(claims.Username, c)
 	if err != nil {
 		if se, ok := err.(*errors.ServiceError); ok {
-			h.logger.Errorc(routerCtx, se)
+			h.logger.Errorc(handlerCtx, se)
 			return c.JSON(se.Code(), Map{
 				"error": se.Err(),
 			})
 		}
 
-		h.logger.Errorc(routerCtx, err)
+		h.logger.Errorc(handlerCtx, err)
 		return c.JSON(http.StatusInternalServerError, Map{
 			"error": ErrInternal,
 		})

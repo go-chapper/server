@@ -13,6 +13,7 @@ import (
 	"chapper.dev/server/internal/modules/hash"
 	"chapper.dev/server/internal/services/errors"
 	"chapper.dev/server/internal/store"
+	"chapper.dev/server/internal/utils"
 
 	"github.com/labstack/echo/v4"
 )
@@ -58,12 +59,12 @@ func (s InviteService) CreateInvite(username string, c echo.Context) (*models.In
 		return nil, errors.ErrMissingInviteData
 	}
 
-	// Get current time and set invite values
-	currentTime := time.Now()
+	// Get expire time and set invite values
+	expireTime := time.Now().Add(DefaultExpireTimespan)
 
 	invite.CreatedBy = username
-	invite.ExpiresAt = currentTime.Add(DefaultExpireTimespan)
-	invite.Hash = hash.Adler32(invite.Server + currentTime.String())
+	invite.ExpiresAt = utils.ToNullTime(expireTime)
+	invite.Hash = hash.Adler32(invite.Server + expireTime.String())
 
 	// Finally store the invite to the database
 	err = s.store.CreateInvite(invite)

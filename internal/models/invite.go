@@ -6,7 +6,8 @@ package models
 
 import (
 	"fmt"
-	"time"
+
+	"gopkg.in/guregu/null.v4"
 )
 
 type Invite struct {
@@ -14,7 +15,7 @@ type Invite struct {
 	CreatedBy  string    `json:"created_by" db:"created_by"`
 	Server     string    `json:"server" db:"server"`
 	OneTimeUse bool      `json:"one_time_use" db:"one_time_use"`
-	ExpiresAt  time.Time `json:"expires_at" db:"expires_at"`
+	ExpiresAt  null.Time `json:"expires_at" db:"expires_at"`
 }
 
 // ToURL returns the URL representation of the invite

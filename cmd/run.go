@@ -5,8 +5,11 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"os"
+	"os/signal"
+	"time"
 
 	"chapper.dev/server/internal/app"
 	"chapper.dev/server/internal/constants"
@@ -34,6 +37,19 @@ var runCmd = &cobra.Command{
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
+		}
+
+		quit := make(chan os.Signal, 1)
+		signal.Notify(quit, os.Interrupt)
+
+		<-quit
+
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+
+		err = a.Stop(ctx)
+		if err != nil {
+			fmt.Println(err)
 		}
 	},
 }

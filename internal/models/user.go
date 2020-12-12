@@ -7,15 +7,17 @@ package models
 import (
 	"regexp"
 	"strings"
+
+	"gopkg.in/guregu/null.v4"
 )
 
 type User struct {
-	Username    string `json:"username" db:"username"`
-	Password    string `json:"-" db:"password"`
-	Email       string `json:"email" db:"email"`
-	PublicKey   string `json:"-" db:"publickey"`
-	TwoFASecret string `json:"-" db:"twofa_secret"`
-	TwoFAVerify string `json:"-" db:"twofa_verify"`
+	Username    string      `json:"username" db:"username"`
+	Password    string      `json:"-" db:"password"`
+	Email       null.String `json:"email" db:"email"`
+	PublicKey   string      `json:"-" db:"publickey"`
+	TwoFASecret null.String `json:"-" db:"twofa_secret"`
+	TwoFAVerify null.String `json:"-" db:"twofa_verify"`
 	// Role           []Role
 	// Friends        []*User
 	// Servers        []*Server
@@ -131,11 +133,10 @@ func (u *User) Invalid() bool {
 	if strings.Contains(u.Username, " ") {
 		return true
 	}
-
-	return !emailRegex.MatchString(u.Email)
+	return false
 }
 
 // UsesTwoFA returns if the user uses 2FA
 func (u *User) UsesTwoFA() bool {
-	return u.TwoFASecret != ""
+	return u.TwoFASecret.String != ""
 }

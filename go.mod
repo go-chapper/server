@@ -3,7 +3,7 @@ module chapper.dev/server
 go 1.14
 
 require (
-	github.com/AlecAivazis/survey/v2 v2.2.4
+	github.com/AlecAivazis/survey/v2 v2.2.5
 	github.com/BurntSushi/toml v0.3.1
 	github.com/Netflix/go-expect v0.0.0-20201125194554-85d881c3777e // indirect
 	github.com/briandowns/spinner v1.12.0
@@ -20,7 +20,6 @@ require (
 	github.com/kr/pty v1.1.8 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/labstack/echo/v4 v4.1.17
-	github.com/labstack/gommon v0.3.0
 	github.com/lib/pq v1.9.0 // indirect
 	github.com/lucas-clemente/quic-go v0.19.3 // indirect
 	github.com/mattn/go-sqlite3 v1.14.5 // indirect
@@ -38,16 +37,16 @@ require (
 	github.com/pion/transport v0.12.0 // indirect
 	github.com/pion/turn/v2 v2.0.5
 	github.com/pion/webrtc/v2 v2.2.26
-	github.com/pkg/errors v0.9.1
 	github.com/pquerna/otp v1.3.0
 	github.com/spf13/cobra v1.1.1
 	golang.org/x/crypto v0.0.0-20201208171446-5f87f3452ae9
 	golang.org/x/net v0.0.0-20201209123823-ac852fbbde11 // indirect
-	golang.org/x/sys v0.0.0-20201207223542-d4d67f95c62d // indirect
+	golang.org/x/sys v0.0.0-20201211090839-8ad439b19e0f // indirect
 	golang.org/x/term v0.0.0-20201210144234-2321bbc49cbf // indirect
 	golang.org/x/text v0.3.4 // indirect
 	google.golang.org/protobuf v1.25.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
+	gopkg.in/guregu/null.v4 v4.0.0
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776 // indirect
 )

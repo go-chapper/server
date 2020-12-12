@@ -4,11 +4,13 @@
 
 package models
 
+import "gopkg.in/guregu/null.v4"
+
 type Server struct {
-	Hash        string `json:"hash" db:"hash"`
-	Name        string `json:"name" db:"name"`
-	Description string `json:"description" db:"description"`
-	Image       string `json:"image" db:"image"`
+	Hash        string      `json:"hash" db:"hash"`
+	Name        string      `json:"name" db:"name"`
+	Description null.String `json:"description" db:"description"`
+	Image       null.String `json:"image" db:"image"`
 }
 
 func (s *Server) IsEmpty() bool {

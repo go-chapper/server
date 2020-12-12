@@ -27,7 +27,7 @@ const (
 	ErrUnauthorized ErrorCode = "unauthorized"
 )
 
-var routerCtx = log.NewContext("router")
+var handlerCtx = log.NewContext("handler")
 
 // Handler provides an interface to handle different HTTP request
 type Handler struct {
@@ -75,13 +75,13 @@ func New(store *store.Store, config *config.Config, logger *log.Logger) *Handler
 
 func (h *Handler) handleError(err error, c echo.Context) error {
 	if se, ok := err.(*errors.ServiceError); ok {
-		h.logger.Errorc(routerCtx, se)
+		h.logger.Errorc(handlerCtx, se)
 		return c.JSON(se.Code(), Map{
 			"error": se.Err(),
 		})
 	}
 
-	h.logger.Errorc(routerCtx, err)
+	h.logger.Errorc(handlerCtx, err)
 	return c.JSON(http.StatusInternalServerError, Map{
 		"error": ErrInternal,
 	})
