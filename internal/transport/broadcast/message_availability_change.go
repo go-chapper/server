@@ -12,20 +12,14 @@ type AvailabilityChange struct {
 	State    constants.AvailabilityState `json:"state"`
 }
 
-// Handle handles the change of the availability change of one user
+// Handle handles the change of the availability state of one user
 func (a *AvailabilityChange) Handle(h *Hub) error {
 	return nil
 }
 
 // Type returns the type of this message as a string
 func (a *AvailabilityChange) Type() string {
-	// NOTE(Techassi): Should we define this in the interface or should we just define this once on the hub?
 	return "availability-change"
-}
-
-// ToTyped returns this message as a generic typed message
-func (a *AvailabilityChange) ToTyped() (Typed, error) {
-	return Typed{}, nil
 }
 
 // New returns a function to create a new AvailabilityChange message

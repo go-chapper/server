@@ -21,15 +21,26 @@ type Message interface {
 	// Type returns the type of the message as a string
 	Type() string
 
-	// ToTyped returns the message as a generic typed message
-	ToTyped() (Typed, error)
-
 	// New returns a constructor to initialize a new message
 	New() func() Message
 }
 
+// AllMessages returns a slice of all available message types
 func AllMessages() []Message {
 	return []Message{&AvailabilityChange{}}
+}
+
+// ToTyped returns the specific message as a generic typed message
+func ToTyped(message Message) (Typed, error) {
+	data, err := json.Marshal(message)
+	if err != nil {
+		return Typed{}, err
+	}
+
+	return Typed{
+		Type: message.Type(),
+		Data: data,
+	}, nil
 }
 
 // ToMessage returns the generic typed message as a specific message
