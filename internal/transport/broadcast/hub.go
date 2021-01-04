@@ -1,10 +1,7 @@
-// Copyright © 2020 Techassi
+// Copyright (c) 2021-present Techassi
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 
-// Package broadcast provides utilities to broadcast messages
-// Inspired by https://github.com/DATA-DOG/golang-websocket-hub and
-// https://github.com/gorilla/websocket/tree/master/examples/chat
 package broadcast
 
 import (
@@ -12,6 +9,7 @@ import (
 	"net/http"
 	"sync"
 
+	"chapper.dev/server/internal/log"
 	"chapper.dev/server/internal/utils"
 
 	"github.com/gorilla/websocket"
@@ -23,27 +21,33 @@ var (
 )
 
 var (
-	ErrInvalidToken = errors.New("invalid-token")
+	ErrInvalidToken             = errors.New("invalid-token")
+	ErrInvalidMessageType       = errors.New("invalid-message-type")
+	ErrMessageTypeAlreadyExists = errors.New("message-type-already-exists")
 )
 
 // Hub is a broadcasting hub to deliver real time chat messages
 type Hub struct {
 	sync.Mutex
 
-	tokens map[string]string // Auth token lookup
-	peers  map[string]*Peer  // Active peers
+	tokens   map[string]string         // Auth token lookup
+	peers    map[string]*Peer          // Active peers
+	messages map[string]func() Message // Map of registered messages
 
 	wsFactory websocket.Upgrader // Websocket factory
+	logger    *log.Logger        // Logger
 
 	broadcast chan *Message // Broadcast channel to distribute messages
 }
 
 // NewHub returns a new messaging hub
-func NewHub() *Hub {
+func NewHub(logger *log.Logger) *Hub {
 	h := &Hub{
 		tokens:    make(map[string]string),
 		peers:     make(map[string]*Peer),
+		messages:  make(map[string]func() Message),
 		broadcast: make(chan *Message),
+		logger:    logger,
 	}
 
 	h.wsFactory = websocket.Upgrader{
@@ -61,13 +65,20 @@ func NewHub() *Hub {
 	return h
 }
 
-func (h *Hub) Run() {
+// Run registers all messages and starts the main loop
+func (h *Hub) Run() error {
+	err := h.RegisterMessages(AllMessages())
+	if err != nil {
+		return err
+	}
+
 	go func() {
 		for {
 			m := <-h.broadcast
 			h.handleMessage(m)
 		}
 	}()
+	return nil
 }
 
 // Broadcast broadcasts a message
@@ -134,4 +145,16 @@ func (h *Hub) NewPeer(username string, w http.ResponseWriter, r *http.Request) (
 	h.Unlock()
 
 	return peer, nil
+}
+
+// RegisterMessages registers an array of messages
+func (h *Hub) RegisterMessages(messages []Message) error {
+	for _, message := range messages {
+		_, exists := h.messages[message.Type()]
+		if exists {
+			return ErrMessageTypeAlreadyExists
+		}
+		h.messages[message.Type()] = message.New()
+	}
+	return nil
 }
