@@ -119,7 +119,7 @@ func Basic() Role {
 }
 
 // IsEmpty returns if some or all values are empty
-func (u *PublicUser) IsEmpty() bool {
+func (u *PublicUser) IsInvalid() bool {
 	return u.Username == "" || u.Password == "" || u.PublicKey == ""
 }
 

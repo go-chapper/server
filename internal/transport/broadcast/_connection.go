@@ -2,7 +2,6 @@
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 
-// Package broadcast provides utilities to broadcast messages
 package broadcast
 
 import (
@@ -28,7 +27,6 @@ var (
 type Connection struct {
 	ws     *websocket.Conn
 	send   chan []byte
-	hub    Hub
 	closed bool
 }
 
@@ -55,9 +53,6 @@ func (c *Connection) Close() {
 
 // ListenRead listens for incoming messages
 func (c *Connection) ListenRead() {
-	defer func() {
-		c.hub.Unregister(c)
-	}()
 	c.ws.SetReadLimit(MaxMessageSize)
 	if err := c.ws.SetReadDeadline(time.Now().Add(PongWait)); err != nil {
 		log.Println("WARNING [Router] Failed to set socket read deadline:", err)

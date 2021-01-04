@@ -14,13 +14,13 @@ import (
 
 // CreateRoom handles incoming requests to create a room
 func (h *Handler) CreateRoom(c echo.Context) error {
-	claims := getClaimes(c)
+	// claims := getClaimes(c)
 
-	if !claims.Privileges.CanCreateRoom {
-		return c.JSON(http.StatusUnauthorized, Map{
-			"error": ErrUnauthorized,
-		})
-	}
+	// if !claims.Privileges.CanCreateRoom {
+	// 	return c.JSON(http.StatusUnauthorized, Map{
+	// 		"error": ErrUnauthorized,
+	// 	})
+	// }
 
 	err := h.roomService.CreateRoom(c)
 	if err != nil {

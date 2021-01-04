@@ -53,12 +53,12 @@ func (s AuthService) Register(c echo.Context) error {
 	}
 
 	// Check if some data is missing
-	if user.IsEmpty() {
+	if user.IsInvalid() {
 		s.logger.Infoc(authCtx, "some data to login/register is missing")
 		return errors.ErrMissingUserData
 	}
 
-	// Hach the password to save into the database
+	// Hash the password to save into the database
 	hashedPassword, err := s.HashPassword(user.Password)
 	if err != nil {
 		s.logger.Errorc(authCtx, err)

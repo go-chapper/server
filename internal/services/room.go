@@ -32,7 +32,7 @@ func NewRoomService(store *store.Store, logger *log.Logger) RoomService {
 
 // CreateRoom creates and inserts a new room into the database
 func (s RoomService) CreateRoom(c echo.Context) error {
-	var room *models.Room
+	var room = new(models.Room)
 
 	// Bind to room model
 	err := c.Bind(room)

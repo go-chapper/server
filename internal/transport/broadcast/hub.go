@@ -8,8 +8,11 @@
 package broadcast
 
 import (
+	"errors"
 	"net/http"
 	"sync"
+
+	"chapper.dev/server/internal/utils"
 
 	"github.com/gorilla/websocket"
 )
@@ -19,88 +22,36 @@ var (
 	WriteBufferSize int = 1024
 )
 
-// Hub describes an bradcasting hub interface
-type Hub interface {
-	Run()
-	Register(*Connection)
-	Unregister(*Connection)
-	Broadcast(*Message)
-	Token(string) (string, error)
-	CreateConnection(http.ResponseWriter, *http.Request) (*Connection, error)
-}
+var (
+	ErrInvalidToken = errors.New("invalid-token")
+)
 
-// SignalingHub is a broadcasting hub to deliver WebRTC signaling messages
-type SignalingHub struct {
+// Hub is a broadcasting hub to deliver real time chat messages
+type Hub struct {
 	sync.Mutex
 
-	tokens map[string]string      // Auth token lookup
-	conns  map[*Connection]string // Active connections
-	peers  map[string]*Peer       // Active peers
+	tokens map[string]string // Auth token lookup
+	peers  map[string]*Peer  // Active peers
 
-	wsFactory  websocket.Upgrader // Websocket factory
-	register   chan *Connection   // Register channel
-	unregister chan *Connection   // Unregister channel
+	wsFactory websocket.Upgrader // Websocket factory
 
 	broadcast chan *Message // Broadcast channel to distribute messages
 }
 
-// MessagingHub is a broadcasting hub to deliver real time chat messages
-type MessagingHub struct {
-	sync.Mutex
-
-	tokens map[string]string      // Auth token lookup
-	conns  map[*Connection]string // Active connections
-	peers  map[string]*Peer       // Active peers
-
-	wsFactory  websocket.Upgrader // Websocket factory
-	register   chan *Connection   // Register channel
-	unregister chan *Connection   // Unregister channel
-
-	broadcast chan *Message // Broadcast channel to distribute messages
-}
-
-// Peer descripes one peer websocket connection
-type Peer struct {
-	Username   string
-	Token      string
-	connection *Connection
-}
-
-// NewSignalingHub returns a new signaling hub
-func NewSignalingHub() *SignalingHub {
-	h := &SignalingHub{
-		tokens:     make(map[string]string),
-		conns:      make(map[*Connection]string),
-		peers:      make(map[string]*Peer),
-		register:   make(chan *Connection),
-		unregister: make(chan *Connection),
-		broadcast:  make(chan *Message),
-	}
-
-	h.wsFactory = websocket.Upgrader{
-		ReadBufferSize:  ReadBufferSize,
-		WriteBufferSize: WriteBufferSize,
-	}
-
-	return h
-}
-
-// NewMessagingHub returns a new messaging hub
-func NewMessagingHub() *MessagingHub {
-	h := &MessagingHub{
-		tokens:     make(map[string]string),
-		conns:      make(map[*Connection]string),
-		peers:      make(map[string]*Peer),
-		register:   make(chan *Connection),
-		unregister: make(chan *Connection),
-		broadcast:  make(chan *Message),
+// NewHub returns a new messaging hub
+func NewHub() *Hub {
+	h := &Hub{
+		tokens:    make(map[string]string),
+		peers:     make(map[string]*Peer),
+		broadcast: make(chan *Message),
 	}
 
 	h.wsFactory = websocket.Upgrader{
 		ReadBufferSize:  ReadBufferSize,
 		WriteBufferSize: WriteBufferSize,
 		CheckOrigin: func(r *http.Request) bool {
-			if r.Header["Origin"][0] == "http://localhost:8080" || r.Header["Origin"][0] == "chapper://." {
+			origin := r.Header["Origin"][0]
+			if origin == "http://localhost:8080" || origin == "chapper://." {
 				return true
 			}
 			return false
@@ -108,4 +59,79 @@ func NewMessagingHub() *MessagingHub {
 	}
 
 	return h
+}
+
+func (h *Hub) Run() {
+	go func() {
+		for {
+			m := <-h.broadcast
+			h.handleMessage(m)
+		}
+	}()
+}
+
+// Broadcast broadcasts a message
+func (h *Hub) Broadcast(m *Message) {
+	h.broadcast <- m
+}
+
+// Send sends the message to one or more receivers
+func (h *Hub) Send(m *Message) {
+	// for _, receiver := range m.To {
+	// 	to, ok := h.peers[receiver]
+	// 	if !ok {
+	// 		return
+	// 	}
+
+	// 	to.connection.Send(m)
+	// }
+}
+
+// Token returns a cryptographically secure random string. If the generation fails, an
+// error is returned
+func (h *Hub) Token(key string) (string, error) {
+	h.Lock()
+	defer h.Unlock()
+
+	if t, ok := h.tokens[key]; ok {
+		return t, nil
+	}
+
+	s, err := utils.RandomCryptoString(16)
+	if err != nil {
+		return "", err
+	}
+
+	h.tokens[key] = s
+	return s, nil
+}
+
+// AuthenticatePeer authenticates a peer undentified by username with the provided token.
+// If the authentication fails, an error is returned
+func (h *Hub) AuthenticatePeer(username, token string) error {
+	if t, ok := h.tokens[username]; !ok || t != token {
+		return ErrInvalidToken
+	}
+	return nil
+}
+
+// NewPeer creates, registers and returns a new peer. If opening the websocket connection
+// fails, an error is returned
+func (h *Hub) NewPeer(username string, w http.ResponseWriter, r *http.Request) (*Peer, error) {
+	ws, err := h.wsFactory.Upgrade(w, r, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	peer := &Peer{
+		Username: username,
+		ws:       ws,
+		hub:      h,
+	}
+
+	h.Lock()
+	h.peers[username] = peer
+	h.Unlock()
+
+	return peer, nil
 }
